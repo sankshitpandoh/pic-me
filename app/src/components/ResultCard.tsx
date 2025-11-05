@@ -4,9 +4,10 @@ import clsx from 'clsx'
 
 type Props = {
   result: ConvertResult
+  isUpdating?: boolean
 }
 
-export default function ResultCard({ result }: Props) {
+export default function ResultCard({ result, isUpdating }: Props) {
   const [copied, setCopied] = useState(false)
   const base64 = useMemo(() => result.dataUrl, [result.dataUrl])
 
@@ -40,7 +41,7 @@ export default function ResultCard({ result }: Props) {
   }
 
   return (
-    <div className="rounded-2xl ring-1 ring-slate-200 dark:ring-slate-800 bg-white/70 dark:bg-white/5 overflow-hidden">
+    <div className="relative rounded-2xl ring-1 ring-slate-200 dark:ring-slate-800 bg-white/70 dark:bg-white/5 overflow-hidden">
       <div className="p-4 flex items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800">
         <div className="flex items-center gap-4 min-w-0">
           <div className="w-14 h-14 rounded-md overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
@@ -53,15 +54,23 @@ export default function ResultCard({ result }: Props) {
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <button className={clsx('px-3 py-2 rounded-md text-sm bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900')} onClick={copy}>{copied ? 'Copied' : 'Copy'}</button>
-          <button className="px-3 py-2 rounded-md text-sm bg-slate-200 dark:bg-slate-800" onClick={downloadTxt}>.txt</button>
-          <button className="px-3 py-2 rounded-md text-sm bg-slate-200 dark:bg-slate-800" onClick={downloadImage}>Download</button>
-          <a className="px-3 py-2 rounded-md text-sm bg-slate-200 dark:bg-slate-800" href={base64} target="_blank" rel="noreferrer">Open</a>
+          <button disabled={!!isUpdating} className={clsx('px-3 py-2 rounded-md text-sm bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 disabled:opacity-50 disabled:cursor-not-allowed')} onClick={copy}>{copied ? 'Copied' : 'Copy'}</button>
+          <button disabled={!!isUpdating} className="px-3 py-2 rounded-md text-sm bg-slate-200 dark:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed" onClick={downloadTxt}>.txt</button>
+          <button disabled={!!isUpdating} className="px-3 py-2 rounded-md text-sm bg-slate-200 dark:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed" onClick={downloadImage}>Download</button>
+          <a aria-disabled={!!isUpdating} className="px-3 py-2 rounded-md text-sm bg-slate-200 dark:bg-slate-800" href={isUpdating ? undefined : base64} target="_blank" rel="noreferrer">Open</a>
         </div>
       </div>
       <div className="p-4">
         <textarea className="w-full h-48 p-3 rounded-md bg-slate-50/60 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 font-mono text-[11px]" value={base64} readOnly aria-label="Base64 data URL" />
       </div>
+      {isUpdating && (
+        <div className="absolute inset-0 bg-white/50 dark:bg-slate-900/40 backdrop-blur-[2px] grid place-items-center">
+          <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+            <span className="inline-block h-4 w-4 rounded-full border-2 border-slate-300 border-t-slate-600 animate-spin" aria-hidden />
+            Updating…
+          </div>
+        </div>
+      )}
     </div>
   )
 }

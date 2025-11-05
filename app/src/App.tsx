@@ -19,6 +19,7 @@ export default function App() {
   const [installed, setInstalled] = useState(false)
   const debounceTimer = useRef<number | null>(null)
   const convertingRef = useRef(false)
+  const [isUpdating, setIsUpdating] = useState(false)
 
   useEffect(() => {
     const w = new Worker(new URL('./lib/worker/convertWorker.ts', import.meta.url), { type: 'module' })
@@ -50,25 +51,27 @@ export default function App() {
   }
 
   async function convertSingle(file: File) {
-    setCurrentResult(null)
+    setIsUpdating(true)
     try {
       const result = await convertFileToBase64(file, options)
       setCurrentResult(result)
     } catch (e: any) {
       setCurrentResult({ dataUrl: '', mime: 'text/plain', sizeBytes: 0, fileName: file.name })
       alert(`Failed to convert ${file.name}: ${e?.message ?? e}`)
-    }
+    } finally { setIsUpdating(false) }
   }
 
-  function convertBatch(files: File[]) {
-    const rows: BatchRow[] = files.map((f, i) => ({ id: `${Date.now()}-${i}`, name: f.name }))
+  function convertBatch(files: File[], reuseRows = false) {
+    const rows: BatchRow[] = reuseRows && batchRows.length === files.length
+      ? batchRows.map((r) => ({ ...r, updating: true }))
+      : files.map((f, i) => ({ id: `${Date.now()}-${i}`, name: f.name, updating: true }))
     setBatchRows(rows)
     const w = workerRef.current
     if (!w) return
     const pending = new Map<string, number>()
     w.onmessage = (ev: MessageEvent<any>) => {
       const msg = ev.data as { id: string; ok: boolean; result?: ConvertResult; error?: string }
-      setBatchRows((prev) => prev.map((r, idx) => idx === (pending.get(msg.id) ?? -1) ? ({ ...r, result: msg.result, error: msg.ok ? undefined : msg.error }) : r))
+      setBatchRows((prev) => prev.map((r, idx) => idx === (pending.get(msg.id) ?? -1) ? ({ ...r, result: msg.result, error: msg.ok ? undefined : msg.error, updating: false }) : r))
     }
     files.forEach((file, idx) => {
       const id = rows[idx].id
@@ -89,7 +92,7 @@ export default function App() {
       if (selectedFiles.length === 1) {
         convertSingle(selectedFiles[0]).finally(() => { convertingRef.current = false })
       } else {
-        convertBatch(selectedFiles)
+        convertBatch(selectedFiles, true)
         convertingRef.current = false
       }
     }, 250)
@@ -100,7 +103,7 @@ export default function App() {
     <div className="min-h-dvh bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
       <div className="border-b border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/40 backdrop-blur">
         <div className="container-responsive py-4 flex items-center justify-between">
-          <h1 className="text-xl sm:text-2xl font-semibold">Image → Base64</h1>
+          <h1 className="text-xl sm:text-2xl font-semibold">Pic Me</h1>
           <div className="flex items-center gap-3">
             {installPromptEvent && !installed && (
               <button className="px-3 py-2 rounded-md text-sm bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900" onClick={async () => { await installPromptEvent.prompt?.(); setInstallPromptEvent(null) }}>Install</button>
@@ -132,7 +135,7 @@ export default function App() {
         {!hasBatch && currentResult && (
           <section aria-label="Result" className="space-y-3">
             <h2 className="text-lg font-medium">Result</h2>
-            <ResultCard result={currentResult} />
+            <ResultCard result={currentResult} isUpdating={isUpdating} />
           </section>
         )}
 

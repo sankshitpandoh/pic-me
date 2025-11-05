@@ -1,4 +1,4 @@
-import { useId } from 'react'
+import { useId, useState } from 'react'
 import type { ConvertOptions } from '../types'
 
 type Props = {
@@ -13,6 +13,7 @@ export default function OptionsPanel({ value, onChange }: Props) {
   const idMaxH = useId()
   const idFit = useId()
   const idBg = useId()
+  const [advancedOpen, setAdvancedOpen] = useState(false)
 
   function update(partial: Partial<ConvertOptions>) {
     onChange({ ...value, ...partial })
@@ -31,8 +32,8 @@ export default function OptionsPanel({ value, onChange }: Props) {
         </div>
       </div>
 
-      <div className="rounded-xl ring-1 ring-slate-200 dark:ring-slate-800 bg-white/70 dark:bg-white/5 p-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="sm:col-span-2">
+      <div className="rounded-xl ring-1 ring-slate-200 dark:ring-slate-800 bg-white/70 dark:bg-white/5 p-4 grid gap-4">
+        <div>
           <label htmlFor={idQuality} className="block text-sm font-medium mb-1">Quality ({Math.round(((value.quality ?? 0.92) * 100))}%)</label>
           <input id={idQuality} type="range" min={0.1} max={1} step={0.01} className="w-full"
             value={value.quality ?? 0.92}
@@ -40,34 +41,51 @@ export default function OptionsPanel({ value, onChange }: Props) {
           />
           <p className="text-xs text-slate-500 mt-1">JPEG/WEBP only.</p>
         </div>
+
         <div>
-          <label htmlFor={idMaxW} className="block text-sm font-medium mb-1">Max Width</label>
-          <input id={idMaxW} type="number" min={1} placeholder="e.g. 1920" className="w-full rounded-md bg-white/80 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 p-2"
-            value={value.resize?.maxWidth ?? ''}
-            onChange={(e) => update({ resize: { ...value.resize, maxWidth: e.target.value ? Number(e.target.value) : undefined } })}
-          />
-        </div>
-        <div>
-          <label htmlFor={idMaxH} className="block text-sm font-medium mb-1">Max Height</label>
-          <input id={idMaxH} type="number" min={1} placeholder="e.g. 1080" className="w-full rounded-md bg-white/80 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 p-2"
-            value={value.resize?.maxHeight ?? ''}
-            onChange={(e) => update({ resize: { ...value.resize, maxHeight: e.target.value ? Number(e.target.value) : undefined } })}
-          />
-        </div>
-        <div>
-          <label htmlFor={idFit} className="block text-sm font-medium mb-1">Fit</label>
-          <select id={idFit} className="w-full rounded-md bg-white/80 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 p-2"
-            value={value.resize?.fit ?? 'contain'}
-            onChange={(e) => update({ resize: { ...value.resize, fit: e.target.value as any } })}
+          <button
+            type="button"
+            className="px-3 py-2 rounded-md text-sm bg-slate-200 dark:bg-slate-800"
+            aria-expanded={advancedOpen}
+            aria-controls="advanced-options"
+            onClick={() => setAdvancedOpen((v) => !v)}
           >
-            <option value="contain">Contain</option>
-            <option value="cover">Cover</option>
-          </select>
+            {advancedOpen ? 'Hide advanced options' : 'Show advanced options'}
+          </button>
         </div>
-        <div>
-          <label htmlFor={idBg} className="block text-sm font-medium mb-1">JPEG Background</label>
-          <input id={idBg} type="color" className="w-full h-10 rounded-md" value={value.background ?? '#ffffff'} onChange={(e) => update({ background: e.target.value })} />
-        </div>
+
+        {advancedOpen && (
+          <div id="advanced-options" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <label htmlFor={idMaxW} className="block text-sm font-medium mb-1">Max Width</label>
+              <input id={idMaxW} type="number" min={1} placeholder="e.g. 1920" className="w-full rounded-md bg-white/80 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 p-2"
+                value={value.resize?.maxWidth ?? ''}
+                onChange={(e) => update({ resize: { ...value.resize, maxWidth: e.target.value ? Number(e.target.value) : undefined } })}
+              />
+            </div>
+            <div>
+              <label htmlFor={idMaxH} className="block text-sm font-medium mb-1">Max Height</label>
+              <input id={idMaxH} type="number" min={1} placeholder="e.g. 1080" className="w-full rounded-md bg-white/80 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 p-2"
+                value={value.resize?.maxHeight ?? ''}
+                onChange={(e) => update({ resize: { ...value.resize, maxHeight: e.target.value ? Number(e.target.value) : undefined } })}
+              />
+            </div>
+            <div>
+              <label htmlFor={idFit} className="block text-sm font-medium mb-1">Fit</label>
+              <select id={idFit} className="w-full rounded-md bg-white/80 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 p-2"
+                value={value.resize?.fit ?? 'contain'}
+                onChange={(e) => update({ resize: { ...value.resize, fit: e.target.value as any } })}
+              >
+                <option value="contain">Contain</option>
+                <option value="cover">Cover</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor={idBg} className="block text-sm font-medium mb-1">JPEG Background</label>
+              <input id={idBg} type="color" className="w-full h-10 rounded-md" value={value.background ?? '#ffffff'} onChange={(e) => update({ background: e.target.value })} />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

@@ -6,6 +6,7 @@ type Row = {
   name: string
   result?: ConvertResult
   error?: string
+  updating?: boolean
 }
 
 type Props = {
@@ -46,10 +47,10 @@ export default function BatchTable({ rows }: Props) {
             <div className="min-w-0">
               <div className="font-medium truncate">{row.name}</div>
               <div className="text-xs text-slate-500 flex items-center gap-2">
-                {!row.result && !row.error && (
+                {(row.updating || (!row.result && !row.error)) && (
                   <span className="inline-block h-3 w-3 rounded-full border-2 border-slate-300 border-t-slate-600 animate-spin" aria-hidden />
                 )}
-                {row.error ? `Error: ${row.error}` : row.result ? `${row.result.mime} · ${(row.result.sizeBytes / 1024).toFixed(1)} KB` : 'Processing...'}
+                {row.error ? `Error: ${row.error}` : row.result ? `${row.result.mime} · ${(row.result.sizeBytes / 1024).toFixed(1)} KB` : (row.updating ? 'Updating…' : 'Processing...')}
               </div>
             </div>
             {row.result && (
