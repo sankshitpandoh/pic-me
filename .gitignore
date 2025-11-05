@@ -1,0 +1,44 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+.cache/
+.vite/
+.rollup.cache/
+
+# Testing / coverage
+coverage/
+.nyc_output/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# ESLint / tooling caches
+.eslintcache
+.stylelintcache
+
+# Vercel / Netlify / Firebase (if used)
+.vercel/
+.netlify/
+.firebase/
+
+# Local npm caches used during setup
+.npm-cache/
+app/.npm-cache-app/
+
+
