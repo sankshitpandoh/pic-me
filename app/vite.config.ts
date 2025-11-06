@@ -10,8 +10,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icons/*'],
       manifest: {
-        name: 'Image → Base64',
-        short_name: 'ImgBase64',
+        name: 'PicME',
+        short_name: 'picMe',
         theme_color: '#0f172a',
         background_color: '#0b1220',
         display: 'standalone',
