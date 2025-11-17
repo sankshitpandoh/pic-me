@@ -140,7 +140,10 @@ export async function generateIcoFromImage(file: File, sizes: number[] = [16, 32
     pngs.push(await generateSizedPng(bitmap, s))
   }
   const icoBytes = buildIcoFromPngs(pngs)
-  const blob = new Blob([icoBytes], { type: 'image/x-icon' })
+  // Ensure BlobPart is a concrete ArrayBuffer by copying into a new buffer
+  const ab = new ArrayBuffer(icoBytes.byteLength)
+  new Uint8Array(ab).set(icoBytes)
+  const blob = new Blob([ab], { type: 'image/x-icon' })
   return {
     blob,
     sizeBytes: icoBytes.byteLength,
