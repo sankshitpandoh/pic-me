@@ -74,14 +74,14 @@ export default function JsonFormatter() {
   }
 
   return (
-    <div className="space-y-6">
-      <section aria-label="Inputs" className="space-y-3">
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-lg border bg-white/70 dark:bg-white/5 border-slate-200 dark:border-slate-800 p-3 space-y-2">
+    <div className="space-y-8">
+      <section aria-label="Inputs" className="space-y-4">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="card p-4 space-y-3">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <div className="text-sm font-medium truncate">{inputName}</div>
-                <div className="text-xs text-slate-500 dark:text-slate-400">JSON input</div>
+                <div className="text-sm font-medium truncate text-white">{inputName}</div>
+                <div className="text-xs text-slate-500">JSON input</div>
               </div>
               <label className="btn-muted cursor-pointer">
                 Load file
@@ -90,18 +90,18 @@ export default function JsonFormatter() {
             </div>
             <textarea
               placeholder="Paste or type JSON…"
-              className="w-full h-48 rounded-md bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 px-2 py-1 text-sm"
+              className="w-full h-48 rounded-2xl bg-slate-950/40 border border-slate-800 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               style={{ whiteSpace: wordWrap ? 'pre-wrap' as const : 'pre' as const }}
             />
-            {error && <div className="text-xs text-red-600 dark:text-red-400">{error}</div>}
+            {error && <div className="text-xs text-red-400">{error}</div>}
           </div>
-          <div className="rounded-lg border bg-white/70 dark:bg-white/5 border-slate-200 dark:border-slate-800 p-3 space-y-2">
+          <div className="card p-4 space-y-3">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <div className="text-sm font-medium truncate">output.json</div>
-                <div className="text-xs text-slate-500 dark:text-slate-400">Result</div>
+                <div className="text-sm font-medium truncate text-white">output.json</div>
+                <div className="text-xs text-slate-500">Result</div>
               </div>
               <div className="flex items-center gap-2">
                 <button className="btn-muted" onClick={copyOutput} disabled={!output}>Copy</button>
@@ -111,26 +111,26 @@ export default function JsonFormatter() {
             <textarea
               readOnly
               placeholder="Formatted/minified JSON…"
-              className="w-full h-48 rounded-md bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 px-2 py-1 text-sm"
+              className="w-full h-48 rounded-2xl bg-slate-950/40 border border-slate-800 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600"
               value={output}
               style={{ whiteSpace: wordWrap ? 'pre-wrap' as const : 'pre' as const }}
             />
-            <div className="text-[11px] text-slate-500 dark:text-slate-400">
+            <div className="text-[11px] text-slate-500">
               {Boolean(stats.inBytes) && (
                 <span>Input {formatBytes(stats.inBytes)} → Output {formatBytes(stats.outBytes)}</span>
               )}
             </div>
           </div>
         </div>
-        <div className="toolbar">
-          <button className="btn-muted" onClick={prettyPrint}>Format</button>
+        <div className="card p-4 flex flex-wrap items-center gap-3 text-sm text-slate-300">
+          <button className="btn-primary" onClick={prettyPrint}>Format</button>
           <button className="btn-muted" onClick={minify}>Minify</button>
-          <button className="btn-muted" onClick={clearAll}>Clear</button>
-          <div className="h-6 w-px bg-slate-200 dark:bg-slate-800" />
-          <div className="flex items-center gap-2 text-sm">
+          <button className="btn-ghost border border-slate-800" onClick={clearAll}>Clear</button>
+          <div className="h-6 w-px bg-slate-800" />
+          <div className="flex items-center gap-2">
             <span>Indent</span>
             <select
-              className="text-sm px-2 py-1 rounded-md bg-white/80 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800"
+              className="text-sm px-3 py-2 rounded-2xl bg-slate-950/40 border border-slate-800"
               value={indent}
               onChange={(e) => setIndent(Number(e.target.value) || 2)}
             >
@@ -138,11 +138,11 @@ export default function JsonFormatter() {
               <option value={4}>4 spaces</option>
             </select>
           </div>
-          <label className="inline-flex items-center gap-2 text-sm">
+          <label className="inline-flex items-center gap-2">
             <input type="checkbox" checked={sortKeys} onChange={(e) => setSortKeys(e.target.checked)} />
             Sort keys
           </label>
-          <label className="inline-flex items-center gap-2 text-sm">
+          <label className="inline-flex items-center gap-2">
             <input type="checkbox" checked={wordWrap} onChange={(e) => setWordWrap(e.target.checked)} />
             Word wrap
           </label>
@@ -175,5 +175,3 @@ function formatBytes(bytes: number): string {
   const i = Math.floor(Math.log(bytes) / Math.log(k))
   return `${(bytes / Math.pow(k, i)).toFixed(i === 0 ? 0 : 2)} ${sizes[i]}`
 }
-
-
