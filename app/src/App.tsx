@@ -4,6 +4,8 @@ import OptionsPanel from './components/OptionsPanel'
 import Preview from './components/Preview'
 import ResultCard from './components/ResultCard'
 import BatchTable from './components/BatchTable'
+import Sidebar from './components/Sidebar'
+import FaviconGenerator from './components/FaviconGenerator'
 import type { ConvertOptions, ConvertResult } from './types'
 
 
@@ -18,6 +20,7 @@ export default function App() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const [currentResult, setCurrentResult] = useState<ConvertResult | null>(null)
   const [batchRows, setBatchRows] = useState<BatchRow[]>([])
+  const [activeTool, setActiveTool] = useState<'convert' | 'favicon'>('convert')
   const workerRef = useRef<Worker | null>(null)
   const pendingRef = useRef<Map<string, PendingCallback>>(new Map())
   const [installPromptEvent, setInstallPromptEvent] = useState<any>(null)
@@ -129,7 +132,7 @@ export default function App() {
 
   return (
     <div className="min-h-dvh bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
-      {isBusy && <div className="progress-bar" aria-hidden />}
+      {activeTool === 'convert' && isBusy && <div className="progress-bar" aria-hidden />}
       <div className="border-b border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/40 backdrop-blur">
         <div className="container-responsive py-4 flex items-center justify-between">
           <h1 className="text-xl sm:text-2xl font-semibold">Pic Me</h1>
@@ -137,48 +140,63 @@ export default function App() {
             {installPromptEvent && !installed && (
               <button className="px-3 py-2 rounded-md text-sm bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900" onClick={async () => { await installPromptEvent.prompt?.(); setInstallPromptEvent(null) }}>Install</button>
             )}
-            <button className="px-3 py-2 rounded-md text-sm bg-slate-200 dark:bg-slate-800" onClick={() => { setSelectedFiles([]); setBatchRows([]); setCurrentResult(null) }}>Clear</button>
+            {activeTool === 'convert' && (
+              <button className="px-3 py-2 rounded-md text-sm bg-slate-200 dark:bg-slate-800" onClick={() => { setSelectedFiles([]); setBatchRows([]); setCurrentResult(null) }}>Clear</button>
+            )}
           </div>
         </div>
       </div>
 
       <main className="container-responsive py-10">
         <div className="lg:grid lg:grid-cols-12 lg:gap-8">
-          <div className="lg:col-span-7 space-y-10">
-            <section>
-              <ImageDropzone onFiles={handleFiles} />
-            </section>
-
-            {selectedFiles.length > 0 && (
-              <section aria-label="Selection" className="space-y-3">
-                <h2 className="text-lg font-medium">Selected</h2>
-                <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
-                  {selectedFiles.map((f, i) => <Preview key={i} file={f} />)}
-                </div>
-              </section>
-            )}
-          </div>
-
-          <div className="lg:col-span-5 mt-10 lg:mt-0">
-            <div className="lg:sticky lg:top-24 space-y-10">
-              <section aria-label="Options" className="space-y-4">
-                <h2 className="text-lg font-medium">Options</h2>
-                <OptionsPanel value={options} onChange={setOptions} currentMime={currentMime} />
-              </section>
-
-              {!hasBatch && currentResult && (
-                <section aria-label="Result" className="space-y-3">
-                  <h2 className="text-lg font-medium">Result</h2>
-                  <ResultCard result={currentResult} isUpdating={isUpdating} />
-                </section>
-              )}
-
-              {hasBatch && (
-                <section aria-label="Batch results" className="space-y-3">
-                  <BatchTable rows={batchRows} />
-                </section>
-              )}
+          <div className="lg:col-span-3 mb-8 lg:mb-0">
+            <div className="lg:sticky lg:top-24">
+              <Sidebar active={activeTool} onSelect={setActiveTool} />
             </div>
+          </div>
+          <div className="lg:col-span-9">
+            {activeTool === 'convert' ? (
+              <div className="lg:grid lg:grid-cols-12 lg:gap-8">
+                <div className="lg:col-span-7 space-y-10">
+                  <section>
+                    <ImageDropzone onFiles={handleFiles} />
+                  </section>
+
+                  {selectedFiles.length > 0 && (
+                    <section aria-label="Selection" className="space-y-3">
+                      <h2 className="text-lg font-medium">Selected</h2>
+                      <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+                        {selectedFiles.map((f, i) => <Preview key={i} file={f} />)}
+                      </div>
+                    </section>
+                  )}
+                </div>
+
+                <div className="lg:col-span-5 mt-10 lg:mt-0">
+                  <div className="lg:sticky lg:top-24 space-y-10">
+                    <section aria-label="Options" className="space-y-4">
+                      <h2 className="text-lg font-medium">Options</h2>
+                      <OptionsPanel value={options} onChange={setOptions} currentMime={currentMime} />
+                    </section>
+
+                    {!hasBatch && currentResult && (
+                      <section aria-label="Result" className="space-y-3">
+                        <h2 className="text-lg font-medium">Result</h2>
+                        <ResultCard result={currentResult} isUpdating={isUpdating} />
+                      </section>
+                    )}
+
+                    {hasBatch && (
+                      <section aria-label="Batch results" className="space-y-3">
+                        <BatchTable rows={batchRows} />
+                      </section>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <FaviconGenerator />
+            )}
           </div>
         </div>
       </main>
