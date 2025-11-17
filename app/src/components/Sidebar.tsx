@@ -45,6 +45,26 @@ export default function Sidebar({ active, onSelect }: Props) {
           </svg>
         }
       />
+      <div className="pt-3">
+        <DisabledItem
+          label="JSON Formatter"
+          description="Pretty-print & validate"
+          icon={
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path d="M7 7h10M7 12h7M7 17h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+          }
+        />
+        <DisabledItem
+          label="Code Minifier"
+          description="Minify JS/CSS/HTML"
+          icon={
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path d="M5 8l4 4-4 4M19 8l-4 4 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+          }
+        />
+      </div>
     </nav>
   )
 }
@@ -54,7 +74,7 @@ function ToolButton(props: { label: string; description: string; active?: boolea
   return (
     <button
       className={clsx(
-        'w-full text-left px-3 py-3 rounded-lg border',
+        'w-full text-left px-3 py-3 rounded-lg border transition-colors',
         active
           ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 border-slate-900/10 dark:border-slate-100/10'
           : 'bg-white/70 dark:bg-white/5 border-slate-200 dark:border-slate-800 hover:bg-white/90 dark:hover:bg-white/10'
@@ -71,6 +91,23 @@ function ToolButton(props: { label: string; description: string; active?: boolea
         </div>
       </div>
     </button>
+  )
+}
+
+function DisabledItem(props: { label: string; description: string; icon: React.ReactNode }) {
+  const { label, description, icon } = props
+  return (
+    <div className="w-full text-left px-3 py-3 rounded-lg border bg-white/40 dark:bg-white/[0.04] border-slate-200 dark:border-slate-800 opacity-60 cursor-not-allowed">
+      <div className="flex items-center gap-3">
+        <div className="h-9 w-9 rounded-md grid place-items-center bg-slate-100 dark:bg-slate-800">
+          {icon}
+        </div>
+        <div>
+          <div className="text-sm font-medium text-slate-800 dark:text-slate-100">{label}</div>
+          <div className="text-xs text-slate-500 dark:text-slate-400">{description}</div>
+        </div>
+      </div>
+    </div>
   )
 }
 

@@ -55,8 +55,12 @@ export default function ImageDropzone({ onFiles }: Props) {
           <rect x="3" y="12" width="18" height="8.5" rx="2" stroke="currentColor" strokeWidth="1.5"/>
         </svg>
       </div>
-      <p className="text-xl font-semibold">Drop images, click to browse, or paste</p>
-      <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">PNG, JPEG, WEBP, GIF, BMP, SVG</p>
+      <p className="text-xl font-semibold">Drag & Drop Image Here</p>
+      <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">or click to browse from your device</p>
+      <div className="mt-4">
+        <span className="btn-muted inline-flex">Browse Files</span>
+      </div>
+      <p className="text-xs text-slate-500 dark:text-slate-400 mt-3">PNG, JPEG, WEBP, GIF, BMP, SVG</p>
       <p id="dropzone-hint" className="mt-3 text-xs text-slate-500 dark:text-slate-400">
         Tip: Press <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-slate-300/70 dark:border-slate-700/70 bg-white/60 dark:bg-slate-900/30">Ctrl<span aria-hidden>+</span>V</span>/<span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-slate-300/70 dark:border-slate-700/70 bg-white/60 dark:bg-slate-900/30">⌘<span aria-hidden>+</span>V</span> to paste from clipboard
       </p>

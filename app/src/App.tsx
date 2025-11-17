@@ -131,6 +131,7 @@ export default function App() {
   const currentMime = selectedFiles.length === 1 ? selectedFiles[0].type : undefined
 
   const isBusy = isUpdating || batchRows.some((r) => r.updating)
+  const pageTitle = activeTool === 'convert' ? 'Image Converter' : activeTool === 'favicon' ? 'Favicon Generator' : 'Code Diff Tool'
 
   return (
     <div className="min-h-dvh bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
@@ -140,16 +141,28 @@ export default function App() {
           <h1 className="text-xl sm:text-2xl font-semibold">Dev Toolkit</h1>
           <div className="flex items-center gap-3">
             {installPromptEvent && !installed && (
-              <button className="px-3 py-2 rounded-md text-sm bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900" onClick={async () => { await installPromptEvent.prompt?.(); setInstallPromptEvent(null) }}>Install</button>
-            )}
-            {activeTool === 'convert' && (
-              <button className="px-3 py-2 rounded-md text-sm bg-slate-200 dark:bg-slate-800" onClick={() => { setSelectedFiles([]); setBatchRows([]); setCurrentResult(null) }}>Clear</button>
+              <button className="btn-primary" onClick={async () => { await installPromptEvent.prompt?.(); setInstallPromptEvent(null) }}>Install</button>
             )}
           </div>
         </div>
       </div>
 
       <main className="container-responsive py-10">
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <nav className="text-xs text-slate-500 dark:text-slate-400 mb-1" aria-label="Breadcrumb">
+              <ol className="inline-flex items-center gap-1">
+                <li>Dev Toolkit</li>
+                <li aria-hidden>›</li>
+                <li className="text-slate-700 dark:text-slate-300">{pageTitle}</li>
+              </ol>
+            </nav>
+            <div className="text-2xl font-semibold">{pageTitle}</div>
+          </div>
+          {activeTool === 'convert' && (
+            <button className="btn-muted" onClick={() => { setSelectedFiles([]); setBatchRows([]); setCurrentResult(null) }}>Clear</button>
+          )}
+        </div>
         <div className="lg:grid lg:grid-cols-12 lg:gap-8">
           <div className="lg:col-span-3 mb-8 lg:mb-0">
             <div className="lg:sticky lg:top-24">

@@ -100,7 +100,7 @@ export default function CodeDiffer() {
                 <div className="text-sm font-medium truncate">{leftName}</div>
                 <div className="text-xs text-slate-500 dark:text-slate-400">Original (left)</div>
               </div>
-              <label className="px-2 py-1 rounded-md text-sm bg-slate-200 dark:bg-slate-800 cursor-pointer">
+              <label className="btn-muted cursor-pointer">
                 Load file
                 <input
                   type="file"
@@ -122,7 +122,7 @@ export default function CodeDiffer() {
                 <div className="text-sm font-medium truncate">{rightName}</div>
                 <div className="text-xs text-slate-500 dark:text-slate-400">Modified (right)</div>
               </div>
-              <label className="px-2 py-1 rounded-md text-sm bg-slate-200 dark:bg-slate-800 cursor-pointer">
+              <label className="btn-muted cursor-pointer">
                 Load file
                 <input
                   type="file"
@@ -139,17 +139,11 @@ export default function CodeDiffer() {
             />
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <button
-            className="px-3 py-2 rounded-md text-sm bg-slate-200 dark:bg-slate-800"
-            onClick={swapSides}
-          >
+        <div className="toolbar">
+          <button className="btn-muted" onClick={swapSides}>
             Swap sides
           </button>
-          <button
-            className="px-3 py-2 rounded-md text-sm bg-slate-200 dark:bg-slate-800"
-            onClick={clearBoth}
-          >
+          <button className="btn-muted" onClick={clearBoth}>
             Clear
           </button>
           <div className="h-6 w-px bg-slate-200 dark:bg-slate-800" />
