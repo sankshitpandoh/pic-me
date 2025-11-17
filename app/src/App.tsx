@@ -7,7 +7,7 @@ import BatchTable from './components/BatchTable'
 import Sidebar from './components/Sidebar'
 import FaviconGenerator from './components/FaviconGenerator'
 import type { ConvertOptions, ConvertResult } from './types'
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from "@vercel/analytics/react"
 
 
 type BatchRow = { id: string; name: string; result?: ConvertResult; error?: string; updating?: boolean }
