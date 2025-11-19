@@ -2,7 +2,7 @@
 
 @layer base {
   :root {
-    color-scheme: light dark;
+    color-scheme: dark;
     /* Design tokens */
     --radius-sm: 0.375rem; /* 6px */
     --radius-md: 0.5rem;   /* 8px */
@@ -22,7 +22,11 @@
     height: 100%;
   }
   body {
-    @apply antialiased bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100;
+    @apply antialiased bg-slate-950 text-slate-100;
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(59,130,246,0.08), transparent 40%),
+      radial-gradient(circle at 80% 0%, rgba(14,165,233,0.08), transparent 35%),
+      linear-gradient(135deg, #020617 0%, #020617 45%, #050f2a 100%);
   }
 
   /* Focus visibility */
@@ -57,10 +61,10 @@
 @layer components {
   /* Cards */
   .card {
-    @apply rounded-2xl ring-1 ring-slate-200 dark:ring-slate-800 bg-white/70 dark:bg-white/5;
+    @apply rounded-3xl border border-slate-800/70 bg-slate-900/60 shadow-[0_20px_60px_rgba(2,6,23,0.35)] backdrop-blur;
   }
   .card-header {
-    @apply border-b border-slate-200 dark:border-slate-800 p-4;
+    @apply border-b border-slate-800/70 p-4;
   }
   .card-body {
     @apply p-4;
@@ -68,16 +72,16 @@
 
   /* Buttons */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors;
   }
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-gradient-to-r from-sky-500 to-indigo-500 text-white shadow-[0_10px_30px_rgba(14,165,233,0.3)] hover:from-sky-400 hover:to-indigo-400;
   }
   .btn-muted {
-    @apply inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-slate-200 dark:bg-slate-800;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-slate-800/80 text-slate-200 border border-slate-700 hover:bg-slate-700/70;
   }
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-transparent hover:bg-slate-100/60 dark:hover:bg-white/10;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-transparent text-slate-300 hover:bg-white/5;
   }
   .toolbar {
     @apply flex flex-wrap items-center gap-3;

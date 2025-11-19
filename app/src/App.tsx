@@ -10,8 +10,15 @@ import CodeDiffer from './components/CodeDiffer'
 import JsonFormatter from './components/JsonFormatter'
 import CodeMinifier from './components/CodeMinifier'
 import type { ConvertOptions, ConvertResult } from './types'
-import { Analytics } from "@vercel/analytics/react"
+import { Analytics } from '@vercel/analytics/react'
 
+const HEADER_NAV: Array<{ label: string; tool: 'convert' | 'favicon' | 'diff' | 'json' | 'minify' }> = [
+  { label: 'Image Converter', tool: 'convert' },
+  { label: 'Favicon Generator', tool: 'favicon' },
+  { label: 'Code Diff Tool', tool: 'diff' },
+  { label: 'JSON Formatter', tool: 'json' },
+  { label: 'Code Minifier', tool: 'minify' },
+]
 
 type BatchRow = { id: string; name: string; result?: ConvertResult; error?: string; updating?: boolean }
 
@@ -113,7 +120,6 @@ export default function App() {
 
   const hasBatch = batchRows.length > 0
 
-  // Live re-apply when options change after selection (debounced)
   useEffect(() => {
     if (!selectedFiles.length) return
     if (debounceTimer.current) window.clearTimeout(debounceTimer.current)
@@ -145,76 +151,124 @@ export default function App() {
       : 'Code Minifier'
 
   return (
-    <div className="min-h-dvh bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
+    <div className="min-h-dvh text-slate-100">
       {activeTool === 'convert' && isBusy && <div className="progress-bar" aria-hidden />}
-      <div className="border-b border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/40 backdrop-blur">
-        <div className="container-responsive py-4 flex items-center justify-between">
-          <h1 className="text-xl sm:text-2xl font-semibold">Dev Toolkit</h1>
-          <div className="flex items-center gap-3">
+
+      <header className="border-b border-slate-800/70 bg-slate-900/40 backdrop-blur-xl">
+        <div className="container-responsive py-5 flex flex-wrap items-center gap-4 justify-between">
+          <div className="flex items-center gap-4">
+            <div className="h-12 w-12 rounded-2xl border border-sky-500/40 bg-sky-500/10 text-sky-300 grid place-items-center">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <path d="M3 7a2 2 0 0 1 2-2h6v4h8v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" stroke="currentColor" strokeWidth="1.5" />
+                <path d="M11 3h4l6 6h-6a4 4 0 0 1-4-4V3z" stroke="currentColor" strokeWidth="1.5" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-[0.45em] text-slate-500">Dev Toolkit</p>
+              <p className="text-lg font-semibold text-white">Creative Utilities</p>
+            </div>
+          </div>
+          <nav className="hidden lg:flex items-center gap-2 text-sm">
+            {HEADER_NAV.map((item) => (
+              <button
+                key={item.tool}
+                className={`px-4 py-2 rounded-full border text-sm ${activeTool === item.tool ? 'border-sky-500/60 text-white bg-sky-500/10' : 'border-transparent text-slate-400 hover:text-white hover:bg-white/5'}`}
+                onClick={() => setActiveTool(item.tool)}
+              >
+                {item.label}
+              </button>
+            ))}
+          </nav>
+          <div className="flex items-center gap-2">
             {installPromptEvent && !installed && (
-              <button className="btn-primary" onClick={async () => { await installPromptEvent.prompt?.(); setInstallPromptEvent(null) }}>Install</button>
+              <button className="btn-muted" onClick={async () => { await installPromptEvent.prompt?.(); setInstallPromptEvent(null) }}>
+                Install app
+              </button>
             )}
+            <button className="btn-primary">Sign Up</button>
           </div>
         </div>
-      </div>
+        <div className="lg:hidden border-t border-slate-800/70">
+          <div className="container-responsive py-3 overflow-x-auto">
+            <div className="flex gap-2 min-w-max">
+              {HEADER_NAV.map((item) => (
+                <button
+                  key={item.tool}
+                  className={`px-4 py-2 rounded-full border text-xs ${activeTool === item.tool ? 'border-sky-500/60 text-white bg-sky-500/10' : 'border-transparent text-slate-400 hover:text-white hover:bg-white/5'}`}
+                  onClick={() => setActiveTool(item.tool)}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </header>
 
-      <main className="container-responsive py-10">
-        <div className="mb-6 flex items-center justify-between">
+      <main className="container-responsive py-10 lg:py-16 space-y-10">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <nav className="text-xs text-slate-500 dark:text-slate-400 mb-1" aria-label="Breadcrumb">
-              <ol className="inline-flex items-center gap-1">
+            <nav className="text-xs uppercase tracking-[0.4em] text-slate-500 mb-3" aria-label="Breadcrumb">
+              <ol className="inline-flex items-center gap-2">
                 <li>Dev Toolkit</li>
-                <li aria-hidden>›</li>
-                <li className="text-slate-700 dark:text-slate-300">{pageTitle}</li>
+                <li aria-hidden>·</li>
+                <li className="text-white">{pageTitle}</li>
               </ol>
             </nav>
-            <div className="text-2xl font-semibold">{pageTitle}</div>
+            <h1 className="text-3xl font-semibold text-white">{pageTitle}</h1>
+            <p className="text-sm text-slate-400 mt-2">Batch-ready, privacy-friendly utilities crafted for developers.</p>
           </div>
           {activeTool === 'convert' && (
-            <button className="btn-muted" onClick={() => { setSelectedFiles([]); setBatchRows([]); setCurrentResult(null) }}>Clear</button>
+            <button className="btn-ghost" onClick={() => { setSelectedFiles([]); setBatchRows([]); setCurrentResult(null) }}>Clear session</button>
           )}
         </div>
+
         <div className="lg:grid lg:grid-cols-12 lg:gap-8">
-          <div className="lg:col-span-3 mb-8 lg:mb-0">
+          <div className="lg:col-span-3 mb-10 lg:mb-0">
             <div className="lg:sticky lg:top-24">
               <Sidebar active={activeTool} onSelect={setActiveTool} />
             </div>
           </div>
           <div className="lg:col-span-9">
             {activeTool === 'convert' ? (
-              <div className="lg:grid lg:grid-cols-12 lg:gap-8">
-                <div className="lg:col-span-7 space-y-10">
-                  <section>
-                    <ImageDropzone onFiles={handleFiles} />
-                  </section>
-
-                  {selectedFiles.length > 0 && (
-                    <section aria-label="Selection" className="space-y-3">
-                      <h2 className="text-lg font-medium">Selected</h2>
-                      <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
-                        {selectedFiles.map((f, i) => <Preview key={i} file={f} />)}
-                      </div>
+              <div className="space-y-8">
+                <div className="grid gap-6 xl:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
+                  <div className="space-y-6">
+                    <section>
+                      <ImageDropzone onFiles={handleFiles} />
                     </section>
-                  )}
-                </div>
-
-                <div className="lg:col-span-5 mt-10 lg:mt-0">
-                  <div className="lg:sticky lg:top-24 space-y-10">
-                    <section aria-label="Options" className="space-y-4">
+                    <section>
                       <OptionsPanel value={options} onChange={setOptions} currentMime={currentMime} />
                     </section>
-
-                    {!hasBatch && currentResult && (
-                      <section aria-label="Result" className="space-y-3">
-                        <h2 className="text-lg font-medium">Result</h2>
-                        <ResultCard result={currentResult} isUpdating={isUpdating} />
+                  </div>
+                  <div className="space-y-6">
+                    {selectedFiles.length > 0 && (
+                      <section aria-label="Selection" className="card p-6 space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h2 className="text-lg font-semibold text-white">Selected images</h2>
+                          <span className="text-xs text-slate-500">{selectedFiles.length} file{selectedFiles.length === 1 ? '' : 's'}</span>
+                        </div>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          {selectedFiles.map((f, i) => <Preview key={i} file={f} />)}
+                        </div>
                       </section>
                     )}
 
-                    {hasBatch && (
-                      <section aria-label="Batch results" className="space-y-3">
-                        <BatchTable rows={batchRows} />
-                      </section>
+                    {hasBatch ? (
+                      <BatchTable rows={batchRows} />
+                    ) : currentResult ? (
+                      <ResultCard result={currentResult} isUpdating={isUpdating} />
+                    ) : (
+                      <div className="card p-10 text-center border-dashed border-slate-800/70">
+                        <div className="mx-auto h-16 w-16 rounded-2xl bg-slate-900/70 border border-slate-800/80 text-slate-500 grid place-items-center">
+                          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden>
+                            <path d="M12 16l-4-4m4 4l4-4m-4 4V3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                            <rect x="3" y="12" width="18" height="8.5" rx="2" stroke="currentColor" strokeWidth="1.5" />
+                          </svg>
+                        </div>
+                        <p className="text-xl font-semibold text-white mt-4">Your image preview will appear here</p>
+                        <p className="text-sm text-slate-400 mt-2">Upload or drop an image on the left to get started.</p>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -232,15 +286,13 @@ export default function App() {
         </div>
       </main>
 
-      <footer className="py-8 text-center text-sm text-slate-500">
-        All processing happens locally in your browser. Works offline.
-      </footer>
+      <footer className="py-8 text-center text-xs text-slate-500">All processing happens locally in your browser. Works offline.</footer>
 
       {toast && (
-        <div role="status" aria-live="polite" className="fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg shadow-lg text-sm bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 ring-1 ring-slate-200/50 dark:ring-slate-800/50">
+        <div role="status" aria-live="polite" className="fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg shadow-lg text-sm bg-slate-900 text-white ring-1 ring-slate-700">
           <div className="flex items-center gap-3">
             <span>{toast}</span>
-            <button className="px-2 py-1 rounded-md bg-white/10 dark:bg-slate-900/10 hover:bg-white/20" onClick={() => setToast(null)} aria-label="Dismiss notification">Dismiss</button>
+            <button className="px-2 py-1 rounded-md bg-white/10 hover:bg-white/20" onClick={() => setToast(null)} aria-label="Dismiss notification">Dismiss</button>
           </div>
         </div>
       )}
@@ -248,4 +300,3 @@ export default function App() {
     </div>
   )
 }
-

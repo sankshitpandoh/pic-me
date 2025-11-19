@@ -9,7 +9,11 @@ type Props = {
 
 export default function Sidebar({ active, onSelect }: Props) {
   return (
-    <nav aria-label="Tools" className="space-y-2">
+    <nav aria-label="Tools" className="card p-4 space-y-3">
+      <div>
+        <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Tools</p>
+        <p className="text-sm text-slate-400">Pick a workflow</p>
+      </div>
       <ToolButton
         label="Image Converter"
         description="Convert, resize, base64"
@@ -76,21 +80,19 @@ function ToolButton(props: { label: string; description: string; active?: boolea
   return (
     <button
       className={clsx(
-        'w-full text-left px-3 py-3 rounded-lg border transition-colors',
+        'w-full text-left px-4 py-4 rounded-2xl border flex items-center gap-3 transition',
         active
-          ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 border-slate-900/10 dark:border-slate-100/10'
-          : 'bg-white/70 dark:bg-white/5 border-slate-200 dark:border-slate-800 hover:bg-white/90 dark:hover:bg-white/10'
+          ? 'bg-gradient-to-r from-sky-600/40 to-indigo-600/40 text-white border-sky-500/40 shadow-[0_10px_30px_rgba(14,165,233,0.25)]'
+          : 'bg-slate-900/40 border-slate-800 text-slate-300 hover:border-slate-700'
       )}
       onClick={onClick}
     >
-      <div className="flex items-center gap-3">
-        <div className={clsx('h-9 w-9 rounded-md grid place-items-center', active ? 'bg-white/10 dark:bg-slate-900/10' : 'bg-slate-100 dark:bg-slate-800')}>
-          {icon}
-        </div>
-        <div>
-          <div className={clsx('text-sm font-medium', active ? '' : 'text-slate-800 dark:text-slate-100')}>{label}</div>
-          <div className={clsx('text-xs', active ? 'text-white/80 dark:text-slate-900/80' : 'text-slate-500 dark:text-slate-400')}>{description}</div>
-        </div>
+      <div className={clsx('h-10 w-10 rounded-xl grid place-items-center', active ? 'bg-white/10 text-white' : 'bg-slate-950/40 text-slate-400')}>
+        {icon}
+      </div>
+      <div>
+        <div className={clsx('text-sm font-semibold', active ? 'text-white' : 'text-slate-100')}>{label}</div>
+        <div className="text-xs text-slate-500">{description}</div>
       </div>
     </button>
   )

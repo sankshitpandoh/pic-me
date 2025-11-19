@@ -9,10 +9,8 @@ export default function CodeMinifier() {
   const [language, setLanguage] = useState<LangKey>('auto')
   const [error, setError] = useState<string | null>(null)
   const [wordWrap, setWordWrap] = useState<boolean>(true)
-  // JS options
   const [jsCompress, setJsCompress] = useState<boolean>(true)
   const [jsMangle, setJsMangle] = useState<boolean>(true)
-  // HTML options
   const [htmlCollapseWhitespace, setHtmlCollapseWhitespace] = useState<boolean>(true)
   const [htmlRemoveComments, setHtmlRemoveComments] = useState<boolean>(true)
 
@@ -71,7 +69,6 @@ export default function CodeMinifier() {
         setOutput(res)
         return
       }
-      // Fallback: best-effort whitespace squashing
       setOutput(input.replace(/\s+/g, ' ').trim())
     } catch (e: any) {
       setError(e?.message || 'Minification failed')
@@ -108,14 +105,14 @@ export default function CodeMinifier() {
   const detected = language === 'auto' ? detectLanguage(inputName, input) : language
 
   return (
-    <div className="space-y-6">
-      <section aria-label="Inputs" className="space-y-3">
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-lg border bg-white/70 dark:bg-white/5 border-slate-200 dark:border-slate-800 p-3 space-y-2">
+    <div className="space-y-8">
+      <section aria-label="Inputs" className="space-y-4">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="card p-4 space-y-3">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <div className="text-sm font-medium truncate">{inputName}</div>
-                <div className="text-xs text-slate-500 dark:text-slate-400">Code input</div>
+                <div className="text-sm font-medium truncate text-white">{inputName}</div>
+                <div className="text-xs text-slate-500">Code input</div>
               </div>
               <label className="btn-muted cursor-pointer">
                 Load file
@@ -124,18 +121,18 @@ export default function CodeMinifier() {
             </div>
             <textarea
               placeholder="Paste or type code…"
-              className="w-full h-48 rounded-md bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 px-2 py-1 text-sm"
+              className="w-full h-48 rounded-2xl bg-slate-950/40 border border-slate-800 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               style={{ whiteSpace: wordWrap ? 'pre-wrap' as const : 'pre' as const }}
             />
-            {error && <div className="text-xs text-red-600 dark:text-red-400">{error}</div>}
+            {error && <div className="text-xs text-red-400">{error}</div>}
           </div>
-          <div className="rounded-lg border bg-white/70 dark:bg-white/5 border-slate-200 dark:border-slate-800 p-3 space-y-2">
+          <div className="card p-4 space-y-3">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <div className="text-sm font-medium truncate">output.min.{extFromLanguage(detected)}</div>
-                <div className="text-xs text-slate-500 dark:text-slate-400">Result</div>
+                <div className="text-sm font-medium truncate text-white">output.min.{extFromLanguage(detected)}</div>
+                <div className="text-xs text-slate-500">Result</div>
               </div>
               <div className="flex items-center gap-2">
                 <button className="btn-muted" onClick={copyOutput} disabled={!output}>Copy</button>
@@ -145,11 +142,11 @@ export default function CodeMinifier() {
             <textarea
               readOnly
               placeholder="Minified code…"
-              className="w-full h-48 rounded-md bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 px-2 py-1 text-sm"
+              className="w-full h-48 rounded-2xl bg-slate-950/40 border border-slate-800 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600"
               value={output}
               style={{ whiteSpace: wordWrap ? 'pre-wrap' as const : 'pre' as const }}
             />
-            <div className="text-[11px] text-slate-500 dark:text-slate-400">
+            <div className="text-[11px] text-slate-500">
               {Boolean(stats.inBytes) && (
                 <span>
                   Input {formatBytes(stats.inBytes)} → Output {formatBytes(stats.outBytes)}
@@ -159,11 +156,11 @@ export default function CodeMinifier() {
             </div>
           </div>
         </div>
-        <div className="toolbar">
+        <div className="card p-4 flex flex-wrap items-center gap-3 text-sm text-slate-300">
           <div className="flex items-center gap-2">
-            <span className="text-sm">Language</span>
+            <span>Language</span>
             <select
-              className="text-sm px-2 py-1 rounded-md bg-white/80 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800"
+              className="text-sm px-3 py-2 rounded-2xl bg-slate-950/40 border border-slate-800"
               value={language}
               onChange={(e) => setLanguage(e.target.value as LangKey)}
             >
@@ -173,36 +170,36 @@ export default function CodeMinifier() {
               <option value="html">HTML</option>
               <option value="json">JSON</option>
             </select>
-            {language === 'auto' && <span className="text-xs text-slate-500 dark:text-slate-400">(Detected: {detected})</span>}
+            {language === 'auto' && <span className="text-xs text-slate-500">(Detected: {detected})</span>}
           </div>
-          <button className="btn-muted" onClick={runMinify}>Minify</button>
-          <button className="btn-muted" onClick={clearAll}>Clear</button>
-          <div className="h-6 w-px bg-slate-200 dark:bg-slate-800" />
-          <label className="inline-flex items-center gap-2 text-sm">
+          <button className="btn-primary" onClick={runMinify}>Minify</button>
+          <button className="btn-ghost border border-slate-800" onClick={clearAll}>Clear</button>
+          <div className="h-6 w-px bg-slate-800" />
+          <label className="inline-flex items-center gap-2">
             <input type="checkbox" checked={wordWrap} onChange={(e) => setWordWrap(e.target.checked)} />
             Word wrap
           </label>
-          { (language === 'auto' ? detected === 'javascript' : language === 'javascript') && (
+          {(language === 'auto' ? detected === 'javascript' : language === 'javascript') && (
             <>
-              <div className="h-6 w-px bg-slate-200 dark:bg-slate-800" />
-              <label className="inline-flex items-center gap-2 text-sm">
+              <div className="h-6 w-px bg-slate-800" />
+              <label className="inline-flex items-center gap-2">
                 <input type="checkbox" checked={jsCompress} onChange={(e) => setJsCompress(e.target.checked)} />
                 JS compress
               </label>
-              <label className="inline-flex items-center gap-2 text-sm">
+              <label className="inline-flex items-center gap-2">
                 <input type="checkbox" checked={jsMangle} onChange={(e) => setJsMangle(e.target.checked)} />
                 JS mangle
               </label>
             </>
           )}
-          { (language === 'auto' ? detected === 'html' : language === 'html') && (
+          {(language === 'auto' ? detected === 'html' : language === 'html') && (
             <>
-              <div className="h-6 w-px bg-slate-200 dark:bg-slate-800" />
-              <label className="inline-flex items-center gap-2 text-sm">
+              <div className="h-6 w-px bg-slate-800" />
+              <label className="inline-flex items-center gap-2">
                 <input type="checkbox" checked={htmlCollapseWhitespace} onChange={(e) => setHtmlCollapseWhitespace(e.target.checked)} />
                 HTML collapse whitespace
               </label>
-              <label className="inline-flex items-center gap-2 text-sm">
+              <label className="inline-flex items-center gap-2">
                 <input type="checkbox" checked={htmlRemoveComments} onChange={(e) => setHtmlRemoveComments(e.target.checked)} />
                 HTML remove comments
               </label>
@@ -220,7 +217,7 @@ function detectLanguage(name: string, content: string): LangKey {
     case 'js':
     case 'mjs':
     case 'cjs':
-    case 'ts': // treat TS as JS for minify
+    case 'ts':
     case 'tsx':
     case 'jsx':
       return 'javascript'
@@ -268,5 +265,3 @@ function formatBytes(bytes: number): string {
   const i = Math.floor(Math.log(bytes) / Math.log(k))
   return `${(bytes / Math.pow(k, i)).toFixed(i === 0 ? 0 : 2)} ${sizes[i]}`
 }
-
-

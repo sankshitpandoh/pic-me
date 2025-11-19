@@ -93,12 +93,12 @@ export default function CodeDiffer() {
   return (
     <div className="space-y-6">
       <section aria-label="Inputs" className="space-y-3">
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-lg border bg-white/70 dark:bg-white/5 border-slate-200 dark:border-slate-800 p-3 space-y-2">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="card p-4 space-y-3">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <div className="text-sm font-medium truncate">{leftName}</div>
-                <div className="text-xs text-slate-500 dark:text-slate-400">Original (left)</div>
+                <div className="text-sm font-medium truncate text-white">{leftName}</div>
+                <div className="text-xs text-slate-500">Original (left)</div>
               </div>
               <label className="btn-muted cursor-pointer">
                 Load file
@@ -111,16 +111,16 @@ export default function CodeDiffer() {
             </div>
             <textarea
               placeholder="Paste or type original content…"
-              className="w-full h-28 rounded-md bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 px-2 py-1 text-sm"
+              className="w-full h-32 rounded-2xl bg-slate-950/40 border border-slate-800 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600"
               value={left}
               onChange={(e) => setLeft(e.target.value)}
             />
           </div>
-          <div className="rounded-lg border bg-white/70 dark:bg-white/5 border-slate-200 dark:border-slate-800 p-3 space-y-2">
+          <div className="card p-4 space-y-3">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <div className="text-sm font-medium truncate">{rightName}</div>
-                <div className="text-xs text-slate-500 dark:text-slate-400">Modified (right)</div>
+                <div className="text-sm font-medium truncate text-white">{rightName}</div>
+                <div className="text-xs text-slate-500">Modified (right)</div>
               </div>
               <label className="btn-muted cursor-pointer">
                 Load file
@@ -133,21 +133,21 @@ export default function CodeDiffer() {
             </div>
             <textarea
               placeholder="Paste or type modified content…"
-              className="w-full h-28 rounded-md bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 px-2 py-1 text-sm"
+              className="w-full h-32 rounded-2xl bg-slate-950/40 border border-slate-800 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600"
               value={right}
               onChange={(e) => setRight(e.target.value)}
             />
           </div>
         </div>
-        <div className="toolbar">
+        <div className="card p-4 flex flex-wrap items-center gap-3 text-sm text-slate-300">
           <button className="btn-muted" onClick={swapSides}>
             Swap sides
           </button>
           <button className="btn-muted" onClick={clearBoth}>
             Clear
           </button>
-          <div className="h-6 w-px bg-slate-200 dark:bg-slate-800" />
-          <label className="inline-flex items-center gap-2 text-sm">
+          <div className="h-6 w-px bg-slate-800" />
+          <label className="inline-flex items-center gap-2">
             <input
               type="checkbox"
               checked={sideBySide}
@@ -155,7 +155,7 @@ export default function CodeDiffer() {
             />
             Side-by-side
           </label>
-          <label className="inline-flex items-center gap-2 text-sm">
+          <label className="inline-flex items-center gap-2">
             <input
               type="checkbox"
               checked={ignoreWhitespace}
@@ -163,7 +163,7 @@ export default function CodeDiffer() {
             />
             Ignore whitespace
           </label>
-          <label className="inline-flex items-center gap-2 text-sm">
+          <label className="inline-flex items-center gap-2">
             <input
               type="checkbox"
               checked={originalEditable}
@@ -171,11 +171,11 @@ export default function CodeDiffer() {
             />
             Edit left
           </label>
-          <div className="h-6 w-px bg-slate-200 dark:bg-slate-800" />
+          <div className="h-6 w-px bg-slate-800" />
           <div className="flex items-center gap-2">
-            <span className="text-sm">Language</span>
+            <span>Language</span>
             <select
-              className="text-sm px-2 py-1 rounded-md bg-white/80 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800"
+              className="text-sm px-3 py-2 rounded-2xl bg-slate-950/40 border border-slate-800"
               value={language}
               onChange={(e) => setLanguage(e.target.value as LanguageKey)}
             >
@@ -188,33 +188,33 @@ export default function CodeDiffer() {
           </div>
         </div>
 
-        <details className="rounded-lg border bg-white/70 dark:bg-white/5 border-slate-200 dark:border-slate-800 p-3">
-          <summary className="cursor-pointer text-sm font-medium leading-7">More options</summary>
+        <details className="card p-4">
+          <summary className="cursor-pointer text-sm font-medium leading-7 text-white">More options</summary>
           <div className="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <label className="inline-flex items-center gap-2 text-sm">
+            <label className="inline-flex items-center gap-2 text-sm text-slate-300">
               <input type="checkbox" checked={wordWrap} onChange={(e) => setWordWrap(e.target.checked)} />
               Word wrap
             </label>
-            <label className="inline-flex items-center gap-2 text-sm">
+            <label className="inline-flex items-center gap-2 text-sm text-slate-300">
               <input type="checkbox" checked={showMinimap} onChange={(e) => setShowMinimap(e.target.checked)} />
               Minimap
             </label>
-            <label className="inline-flex items-center gap-2 text-sm">
+            <label className="inline-flex items-center gap-2 text-sm text-slate-300">
               <input type="checkbox" checked={showLineNumbers} onChange={(e) => setShowLineNumbers(e.target.checked)} />
               Line numbers
             </label>
-            <label className="inline-flex items-center gap-2 text-sm">
+            <label className="inline-flex items-center gap-2 text-sm text-slate-300">
               <input type="checkbox" checked={showIndicators} onChange={(e) => setShowIndicators(e.target.checked)} />
               Diff indicators
             </label>
-            <label className="inline-flex items-center gap-2 text-sm">
+            <label className="inline-flex items-center gap-2 text-sm text-slate-300">
               <input type="checkbox" checked={showOverviewRuler} onChange={(e) => setShowOverviewRuler(e.target.checked)} />
               Overview ruler
             </label>
             <div className="flex items-center gap-2 text-sm">
               <span>Whitespace</span>
               <select
-                className="text-sm px-2 py-1 rounded-md bg-white/80 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800"
+                className="text-sm px-3 py-2 rounded-2xl bg-slate-950/40 border border-slate-800"
                 value={renderWhitespace}
                 onChange={(e) => setRenderWhitespace(e.target.value as any)}
               >
@@ -227,7 +227,7 @@ export default function CodeDiffer() {
             <div className="flex items-center gap-2 text-sm">
               <span>Diff algorithm</span>
               <select
-                className="text-sm px-2 py-1 rounded-md bg-white/80 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800"
+                className="text-sm px-3 py-2 rounded-2xl bg-slate-950/40 border border-slate-800"
                 value={diffAlgo}
                 onChange={(e) => setDiffAlgo(e.target.value as any)}
               >
@@ -255,10 +255,10 @@ export default function CodeDiffer() {
                 max={8}
                 value={tabSize}
                 onChange={(e) => setTabSize(Math.min(8, Math.max(1, Number(e.target.value) || 2)))}
-                className="w-20 rounded-md bg-white/80 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 px-2 py-1"
+                className="w-20 rounded-2xl bg-slate-950/40 border border-slate-800 px-3 py-2"
               />
             </div>
-            <label className="inline-flex items-center gap-2 text-sm">
+            <label className="inline-flex items-center gap-2 text-sm text-slate-300">
               <input type="checkbox" checked={insertSpaces} onChange={(e) => setInsertSpaces(e.target.checked)} />
               Use spaces for tabs
             </label>
@@ -269,7 +269,7 @@ export default function CodeDiffer() {
       <section aria-label="Diff">
         <div
           className={clsx(
-            'rounded-lg border bg-white/70 dark:bg-white/5 border-slate-200 dark:border-slate-800 overflow-hidden'
+            'card overflow-hidden'
           )}
           style={{ height: '70vh' }}
         >
