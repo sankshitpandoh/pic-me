@@ -1,0 +1,10 @@
+{
+  "signupBonusCredits": 20,
+  "creditsPerMessage": 1,
+  "creditsPerPhoto": 3,
+  "packs": [
+    { "id": "pack_29", "priceInr": 29, "credits": 35, "label": "Starter" },
+    { "id": "pack_49", "priceInr": 49, "credits": 65, "label": "Popular" },
+    { "id": "pack_99", "priceInr": 99, "credits": 140, "label": "Best value" }
+  ]
+}
