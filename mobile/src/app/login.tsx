@@ -1,227 +1,340 @@
-import { useState } from "react";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
+  ScrollView,
   StyleSheet,
-  Text,
-  TextInput,
   View,
+  useWindowDimensions,
+  type TextInput,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { AppText, GradientButton } from "../components";
+import { copy } from "../components/onboarding/copy";
+import { DobInput, EMPTY_DOB, checkDob, type Dob } from "../components/onboarding/DobInput";
+import { OnboardingHero } from "../components/onboarding/OnboardingHero";
+import { OTP_LENGTH, OtpInput } from "../components/onboarding/OtpInput";
+import { ConsentRow, InlineError, ResendRow, StepFade, StepIndicator, TextLink } from "../components/onboarding/Parts";
+import { PhoneInput, formatPhone } from "../components/onboarding/PhoneInput";
 import { ApiError, api, errorMessage } from "../lib/api";
 import { useAuth } from "../lib/auth";
-import { t } from "../lib/strings";
-import { colors } from "../lib/theme";
+import { haptic } from "../lib/haptics";
+import { fmt, t } from "../lib/strings";
+import { colors, radii, space } from "../lib/theme";
 
-type Step = "phone" | "otp";
+type Step = "phone" | "otp" | "dob";
+const RESEND_COOLDOWN_MS = 30_000;
+const isValidPhone = (d: string) => /^[6-9]\d{9}$/.test(d);
 
 export default function LoginScreen() {
   const { signIn } = useAuth();
+  const insets = useSafeAreaInsets();
+  const { height } = useWindowDimensions();
+
   const [step, setStep] = useState<Step>("phone");
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
-  const [needsDob, setNeedsDob] = useState(false);
-  const [dob, setDob] = useState({ day: "", month: "", year: "" });
-  const [adultConfirmed, setAdultConfirmed] = useState(false);
+  const [isNewUser, setIsNewUser] = useState<boolean | null>(null);
+  const [devCode, setDevCode] = useState<string | null>(null);
+  const [resendAt, setResendAt] = useState(0);
+  const [dob, setDob] = useState<Dob>(EMPTY_DOB);
+  const [consent, setConsent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [hint, setHint] = useState<string | null>(null);
+  const [shakeKey, setShakeKey] = useState(0);
+  const [keyboardUp, setKeyboardUp] = useState(false);
 
-  async function sendOtp() {
+  const otpRef = useRef<TextInput>(null);
+  const submitting = useRef(false);
+  const lastRequested = useRef<string | null>(null);
+  const visitedOtp = useRef(false);
+
+  useEffect(() => {
+    const showEvt = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvt = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+    const a = Keyboard.addListener(showEvt, () => setKeyboardUp(true));
+    const b = Keyboard.addListener(hideEvt, () => setKeyboardUp(false));
+    return () => {
+      a.remove();
+      b.remove();
+    };
+  }, []);
+
+  const fail = useCallback((err: unknown) => {
+    haptic.error();
+    setError(errorMessage(err));
+  }, []);
+
+  // ── step 1: phone ──
+  const sendOtp = async () => {
+    if (!isValidPhone(phone)) {
+      haptic.error();
+      setError(t.errors.invalid_phone);
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
       const res = await api.requestOtp(phone);
-      setNeedsDob(res.isNewUser);
-      setHint(res.devCode ? `Dev mode OTP: ${res.devCode}` : null);
+      lastRequested.current = phone;
+      setIsNewUser(res.isNewUser);
+      setDevCode(res.devCode ?? null);
+      setResendAt(Date.now() + RESEND_COOLDOWN_MS);
+      setCode("");
       setStep("otp");
     } catch (err) {
-      setError(errorMessage(err));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function verify() {
-    let dobString: string | undefined;
-    if (needsDob) {
-      const { day, month, year } = dob;
-      if (!day || !month || year.length !== 4) return setError("Please enter your full date of birth.");
-      if (!adultConfirmed) return setError("Please confirm that you are 18 or older.");
-      dobString = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
-    }
-    setBusy(true);
-    setError(null);
-    try {
-      const res = await api.verifyOtp(phone, code, dobString);
-      await signIn(res.token, res.user);
-    } catch (err) {
-      if (err instanceof ApiError && err.code === "dob_required") {
-        setNeedsDob(true);
-        setError("Please enter your date of birth to finish signing up.");
+      // Came back and re-sent the same number inside the cooldown: the earlier code is still valid.
+      if (err instanceof ApiError && err.code === "otp_cooldown" && lastRequested.current === phone) {
+        setCode("");
+        setStep("otp");
       } else {
-        setError(errorMessage(err));
+        fail(err);
       }
     } finally {
       setBusy(false);
     }
-  }
+  };
 
-  const canSubmit = step === "phone" ? phone.replace(/\D/g, "").length >= 10 : code.length === 6;
+  // ── step 2 + 3: verify (DOB only for new users) ──
+  const verify = async (otp: string, dobIso?: string) => {
+    if (submitting.current) return;
+    submitting.current = true;
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await api.verifyOtp(phone, otp, dobIso);
+      haptic.success();
+      await signIn(res.token, res.user); // root auth guard routes to the tabs
+    } catch (err) {
+      if (err instanceof ApiError && err.code === "dob_required") {
+        // OTP was correct and stays valid — collect DOB + consent, then resubmit.
+        setIsNewUser(true);
+        setStep("dob");
+      } else {
+        fail(err);
+        if (err instanceof ApiError && err.code === "otp_invalid") {
+          setShakeKey((k) => k + 1);
+          setCode("");
+          otpRef.current?.focus();
+        }
+      }
+    } finally {
+      submitting.current = false;
+      setBusy(false);
+    }
+  };
+
+  const resend = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await api.requestOtp(phone);
+      haptic.select();
+      setDevCode(res.devCode ?? null);
+      setResendAt(Date.now() + RESEND_COOLDOWN_MS);
+      setCode("");
+      otpRef.current?.focus();
+    } catch (err) {
+      fail(err);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const backToPhone = () => {
+    visitedOtp.current = true;
+    setStep("phone");
+    setCode("");
+    setDob(EMPTY_DOB);
+    setConsent(false);
+    setError(null);
+  };
+
+  const dobCheck = checkDob(dob);
+  const dobError = dobCheck.status === "invalid" ? dobCheck.message : null;
+  const submitDob = () => {
+    if (dobCheck.status !== "ok") {
+      haptic.error();
+      return;
+    }
+    if (!consent) return;
+    verify(code, dobCheck.iso);
+  };
+
+  // ── layout ──
+  const totalSteps = isNewUser === false ? 2 : 3;
+  const stepNo = step === "phone" ? 1 : step === "otp" ? 2 : 3;
+  const heroH = keyboardUp
+    ? insets.top + 132
+    : Math.round(Math.min(Math.max(height * 0.36, 250), 340));
+  const phoneInvalid = phone.length === 10 && !isValidPhone(phone);
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.container}>
-        <Text style={styles.logo}>{t.brand}</Text>
-        <Text style={styles.subtitle}>Your AI friends, always up for a chat 💬</Text>
+    <View style={styles.root}>
+      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+        <ScrollView
+          style={styles.flex}
+          contentContainerStyle={styles.scroll}
+          keyboardShouldPersistTaps="handled"
+          bounces={false}
+          showsVerticalScrollIndicator={false}
+        >
+          <OnboardingHero height={heroH} topInset={insets.top} compact={keyboardUp} />
 
-        {step === "phone" ? (
-          <>
-            <Text style={styles.label}>Mobile number</Text>
-            <View style={styles.phoneRow}>
-              <Text style={styles.prefix}>+91</Text>
-              <TextInput
-                style={[styles.input, { flex: 1, minWidth: 0 }]}
-                value={phone}
-                onChangeText={setPhone}
-                keyboardType="phone-pad"
-                placeholder="98765 43210"
-                maxLength={14}
-                autoFocus
-              />
-            </View>
-          </>
-        ) : (
-          <>
-            <Text style={styles.label}>Enter the 6-digit OTP sent to +91 {phone}</Text>
-            <TextInput
-              style={styles.input}
-              value={code}
-              onChangeText={(t) => setCode(t.replace(/\D/g, ""))}
-              keyboardType="number-pad"
-              placeholder="••••••"
-              maxLength={6}
-              autoFocus
-            />
-            {hint && <Text style={styles.hint}>{hint}</Text>}
+          <View style={[styles.card, { paddingBottom: Math.max(insets.bottom, space.lg) + space.sm }]}>
+            <StepIndicator step={stepNo} total={totalSteps} onBack={step === "phone" ? undefined : backToPhone} />
 
-            {needsDob && (
-              <>
-                <Text style={styles.label}>Date of birth</Text>
-                <View style={styles.dobRow}>
-                  <TextInput
-                    style={[styles.input, styles.dobPart]}
-                    placeholder="DD"
-                    keyboardType="number-pad"
-                    maxLength={2}
-                    value={dob.day}
-                    onChangeText={(day) => setDob((d) => ({ ...d, day }))}
+            <StepFade key={step}>
+              {step === "phone" ? (
+                <View style={styles.stepBody}>
+                  <View style={styles.heading}>
+                    <AppText variant="title1">{t.login.phoneLabel}</AppText>
+                    <AppText variant="body" color="textMuted">
+                      {copy.phoneHint}
+                    </AppText>
+                  </View>
+                  <PhoneInput
+                    value={phone}
+                    onChangeDigits={(d) => {
+                      setPhone(d);
+                      if (error) setError(null);
+                    }}
+                    onSubmit={sendOtp}
+                    invalid={!!error || phoneInvalid}
+                    autoFocus={visitedOtp.current}
                   />
-                  <TextInput
-                    style={[styles.input, styles.dobPart]}
-                    placeholder="MM"
-                    keyboardType="number-pad"
-                    maxLength={2}
-                    value={dob.month}
-                    onChangeText={(month) => setDob((d) => ({ ...d, month }))}
-                  />
-                  <TextInput
-                    style={[styles.input, styles.dobPart, { flex: 1.6, flexBasis: 0 }]}
-                    placeholder="YYYY"
-                    keyboardType="number-pad"
-                    maxLength={4}
-                    value={dob.year}
-                    onChangeText={(year) => setDob((d) => ({ ...d, year }))}
+                  <InlineError message={error ?? (phoneInvalid ? t.errors.invalid_phone : null)} />
+                  <GradientButton
+                    title={t.login.sendOtp}
+                    onPress={sendOtp}
+                    disabled={!isValidPhone(phone)}
+                    loading={busy}
+                    style={styles.cta}
                   />
                 </View>
-                <Pressable style={styles.checkRow} onPress={() => setAdultConfirmed((v) => !v)}>
-                  <View style={[styles.checkbox, adultConfirmed && styles.checkboxOn]}>
-                    {adultConfirmed && <Text style={styles.checkMark}>✓</Text>}
+              ) : step === "otp" ? (
+                <View style={styles.stepBody}>
+                  <View style={styles.heading}>
+                    <AppText variant="title1">{copy.otpTitle}</AppText>
+                    <AppText variant="body" color="textMuted">
+                      {fmt(t.login.otpLabel, { phone: formatPhone(phone) })}
+                    </AppText>
                   </View>
-                  <Text style={styles.checkText}>
-                    I am 18 or older and understand that the characters in this app are AI, not real people.
-                  </Text>
-                </Pressable>
-              </>
-            )}
-          </>
-        )}
+                  <OtpInput
+                    ref={otpRef}
+                    value={code}
+                    onChange={(c) => {
+                      setCode(c);
+                      if (error) setError(null);
+                    }}
+                    onComplete={(c) => verify(c)}
+                    invalid={!!error}
+                    shakeKey={shakeKey}
+                    editable={!busy}
+                    autoFocus
+                  />
+                  <InlineError message={error} />
+                  {__DEV__ && devCode ? (
+                    <AppText variant="micro" color="textDisabled" style={styles.devCode}>
+                      {fmt(copy.devOtp, { code: devCode })}
+                    </AppText>
+                  ) : null}
+                  <View style={styles.otpLinks}>
+                    <ResendRow availableAt={resendAt} onResend={resend} busy={busy} />
+                    <TextLink label={t.login.changeNumber} onPress={backToPhone} />
+                  </View>
+                  <GradientButton
+                    title={busy ? copy.otpVerifying : t.common.continue}
+                    onPress={() => verify(code)}
+                    disabled={code.length !== OTP_LENGTH}
+                    loading={busy}
+                    style={styles.ctaTight}
+                  />
+                </View>
+              ) : (
+                <View style={styles.stepBody}>
+                  <View style={styles.heading}>
+                    <AppText variant="title1">{t.login.dobTitle}</AppText>
+                    <AppText variant="body" color="textMuted">
+                      {copy.dobSubtitle}
+                    </AppText>
+                  </View>
+                  <DobInput
+                    value={dob}
+                    onChange={(d) => {
+                      setDob(d);
+                      if (error) setError(null);
+                    }}
+                    invalid={!!(dobError ?? error)}
+                    editable={!busy}
+                    autoFocus
+                    onSubmit={submitDob}
+                  />
+                  <InlineError message={dobError ?? error} />
+                  <View style={styles.consentWrap}>
+                    <ConsentRow checked={consent} onToggle={() => setConsent((v) => !v)} label={t.login.consent} />
+                  </View>
+                  <GradientButton
+                    title={t.login.continue}
+                    onPress={submitDob}
+                    disabled={dobCheck.status !== "ok" || !consent}
+                    loading={busy}
+                    style={styles.cta}
+                  />
+                </View>
+              )}
+            </StepFade>
 
-        {error && <Text style={styles.error}>{error}</Text>}
-
-        <Pressable
-          style={[styles.button, (!canSubmit || busy) && styles.buttonDisabled]}
-          disabled={!canSubmit || busy}
-          onPress={step === "phone" ? sendOtp : verify}
-        >
-          {busy ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>{step === "phone" ? "Get OTP" : "Continue"}</Text>
-          )}
-        </Pressable>
-
-        {step === "otp" && (
-          <Pressable
-            onPress={() => {
-              setStep("phone");
-              setCode("");
-              setError(null);
-            }}
-          >
-            <Text style={styles.link}>Change number</Text>
-          </Pressable>
-        )}
+            <View style={styles.spacer} />
+            <View style={styles.footer}>
+              <View style={styles.trustRow}>
+                <Ionicons name="shield-checkmark" size={13} color={colors.success} />
+                <AppText variant="caption" color="textMuted" align="center">
+                  {t.login.trust.replace(/^🔒\s*/, "")}
+                </AppText>
+              </View>
+              <AppText variant="micro" color="textDisabled" align="center">
+                {copy.adultsOnly}
+              </AppText>
+            </View>
+          </View>
+        </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.bg },
-  container: { flex: 1, padding: 24, justifyContent: "center" },
-  logo: { fontSize: 40, fontWeight: "800", color: colors.primary, textAlign: "center" },
-  subtitle: { fontSize: 15, color: colors.textMuted, textAlign: "center", marginBottom: 40, marginTop: 6 },
-  label: { fontSize: 14, color: colors.text, marginBottom: 8, marginTop: 16, fontWeight: "600" },
-  phoneRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  prefix: { fontSize: 18, color: colors.text, fontWeight: "600" },
-  input: {
+  root: { flex: 1, backgroundColor: colors.bg },
+  flex: { flex: 1 },
+  scroll: { flexGrow: 1 },
+  card: {
     backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 18,
-    color: colors.text,
+    borderTopLeftRadius: radii.xxl,
+    borderTopRightRadius: radii.xxl,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderLeftWidth: StyleSheet.hairlineWidth,
+    borderRightWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.borderStrong,
+    paddingHorizontal: space.gutter,
+    paddingTop: space.xl,
+    marginTop: -space.lg,
   },
-  hint: { color: colors.textMuted, marginTop: 6, fontSize: 13 },
-  dobRow: { flexDirection: "row", gap: 8 },
-  dobPart: { flex: 1, flexBasis: 0, minWidth: 0, textAlign: "center" },
-  checkRow: { flexDirection: "row", alignItems: "flex-start", gap: 10, marginTop: 16 },
-  checkbox: {
-    width: 22,
-    height: 22,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: colors.primary,
+  stepBody: { paddingTop: space.lg },
+  heading: { gap: space.xs, marginBottom: space.xl },
+  cta: { marginTop: space.xl },
+  ctaTight: { marginTop: space.md },
+  devCode: { marginTop: space.sm, letterSpacing: 0.4 },
+  otpLinks: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "space-between",
+    marginTop: space.xs,
   },
-  checkboxOn: { backgroundColor: colors.primary },
-  checkMark: { color: "#fff", fontWeight: "800", fontSize: 13 },
-  checkText: { flex: 1, color: colors.text, fontSize: 13, lineHeight: 18 },
-  error: { color: colors.danger, marginTop: 16 },
-  button: {
-    backgroundColor: colors.primary,
-    borderRadius: 14,
-    paddingVertical: 15,
-    alignItems: "center",
-    marginTop: 24,
-  },
-  buttonDisabled: { opacity: 0.5 },
-  buttonText: { color: "#fff", fontSize: 17, fontWeight: "700" },
-  link: { color: colors.primary, textAlign: "center", marginTop: 16, fontWeight: "600" },
+  consentWrap: { marginTop: space.lg },
+  spacer: { height: space.xxl },
+  footer: { alignItems: "center", gap: space.xs },
+  trustRow: { flexDirection: "row", alignItems: "center", gap: space.xs + 1 },
 });
