@@ -20,7 +20,7 @@ import { colors } from "../../lib/theme";
 
 export default function ChatScreen() {
   const { personaId } = useLocalSearchParams<{ personaId: string }>();
-  const { credits, setCredits } = useAuth();
+  const { credits, setWallet } = useAuth();
   const [name, setName] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState("");
@@ -49,12 +49,12 @@ export default function ChatScreen() {
     setOutOfCredits(false);
     // Show the message right away; replace it with the server's copy once the reply arrives.
     const tempId = -Date.now();
-    setMessages((m) => [...m, { id: tempId, role: "user", text, photoUrl: null, createdAt: "" }]);
+    setMessages((m) => [...m, { id: tempId, role: "user", text, photo: null, createdAt: "" }]);
     setDraft("");
     try {
       const res = await api.send(personaId, text);
       setMessages((m) => [...m.filter((x) => x.id !== tempId), res.userMessage, res.reply]);
-      setCredits(res.credits);
+      setWallet(res.wallet);
     } catch (err) {
       setMessages((m) => m.filter((x) => x.id !== tempId));
       setDraft(text);
@@ -139,9 +139,9 @@ function MessageBubble({ message, onOpenPhoto }: { message: ChatMessage; onOpenP
   const mine = message.role === "user";
   return (
     <View style={[styles.bubble, mine ? styles.mine : styles.theirs]}>
-      {message.photoUrl && (
-        <Pressable onPress={() => onOpenPhoto(message.photoUrl!)}>
-          <Image source={{ uri: message.photoUrl }} style={styles.photo} contentFit="cover" transition={150} />
+      {message.photo?.url && (
+        <Pressable onPress={() => onOpenPhoto(message.photo!.url!)}>
+          <Image source={{ uri: message.photo.url }} style={styles.photo} contentFit="cover" transition={150} />
         </Pressable>
       )}
       {message.text ? <Text style={[styles.text, mine && { color: "#fff" }]}>{message.text}</Text> : null}
@@ -150,11 +150,11 @@ function MessageBubble({ message, onOpenPhoto }: { message: ChatMessage; onOpenP
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
+  safe: { flex: 1, backgroundColor: colors.bg },
   credits: { color: colors.primary, fontWeight: "700", fontSize: 15 },
   typing: { color: colors.textMuted, fontStyle: "italic", marginLeft: 4, marginBottom: 4 },
   bubble: { maxWidth: "80%", borderRadius: 18, paddingHorizontal: 14, paddingVertical: 9 },
-  mine: { alignSelf: "flex-end", backgroundColor: colors.bubbleMine, borderBottomRightRadius: 4 },
+  mine: { alignSelf: "flex-end", backgroundColor: colors.primary, borderBottomRightRadius: 4 },
   theirs: {
     alignSelf: "flex-start",
     backgroundColor: colors.bubbleTheirs,
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     maxHeight: 120,
-    backgroundColor: colors.background,
+    backgroundColor: colors.bg,
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 10,

@@ -2,6 +2,8 @@ import crypto from "node:crypto";
 import type { NextFunction, Request, Response } from "express";
 import { IS_PROD, getPricing } from "./config.ts";
 import { addCredits, db, getUser, transaction, type User } from "./db.ts";
+import { deleteAccount } from "./threads.ts";
+import { walletSummary } from "./wallet.ts";
 
 const OTP_TTL_MS = 5 * 60_000;
 const OTP_RESEND_COOLDOWN_MS = 30_000;
@@ -102,7 +104,21 @@ export function verifyOtp(req: Request, res: Response) {
   db.prepare("DELETE FROM otps WHERE phone = ?").run(phone);
   const token = crypto.randomBytes(32).toString("base64url");
   db.prepare("INSERT INTO sessions (token, user_id) VALUES (?, ?)").run(token, user.id);
-  res.json({ token, user: getUser(user.id) });
+  res.json({ token, user: toMe(getUser(user.id)!) });
+}
+
+function toMe(user: User) {
+  return { id: user.id, phone: user.phone, ...walletSummary(user.id) };
+}
+
+export function getMe(req: Request, res: Response) {
+  res.json(toMe(req.user!));
+}
+
+/** Account deletion (required by the Play Store): removes all of the user's data. */
+export function deleteMe(req: Request, res: Response) {
+  deleteAccount(req.user!.id);
+  res.json({ ok: true });
 }
 
 export function logout(req: Request, res: Response) {

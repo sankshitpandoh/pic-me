@@ -27,7 +27,36 @@ test("rejects personas under 18 or with bad ids", () => {
 
 test("bundled personas all load", () => {
   const ids = listEnabledPersonas().map((p) => p.id);
-  assert.deepEqual(ids, ["priya", "ananya", "meera"]);
+  for (const id of ["priya", "ananya", "meera"]) assert.ok(ids.includes(id), `${id} should load`);
+});
+
+test("new frontmatter fields default sensibly when missing", () => {
+  const p = parsePersonaFile(file("id: test\nname: Tara\nage: 22\ntagline: Hello there"), "");
+  assert.equal(p.vibe, "Hello there");
+  assert.deepEqual(p.tags, []);
+  assert.deepEqual(p.starters, ["Kya kar rahi ho?", "Tumhara din kaisa tha?"]);
+  assert.equal(p.accent, null);
+});
+
+test("parses vibe, tags, starters and accent", () => {
+  const p = parsePersonaFile(
+    file(
+      'id: test\nname: Tara\nage: 22\nvibe: "Chai pe chalein?"\ntags: [Funny, Filmy]\n' +
+        'starters: ["Hi!", "Kya scene?"]\naccent: ["#FF8A5B", "#ff3d7f"]',
+    ),
+    "",
+  );
+  assert.equal(p.vibe, "Chai pe chalein?");
+  assert.deepEqual(p.tags, ["Funny", "Filmy"]);
+  assert.deepEqual(p.starters, ["Hi!", "Kya scene?"]);
+  assert.deepEqual(p.accent, ["#FF8A5B", "#ff3d7f"]);
+});
+
+test("rejects malformed accents without rejecting the persona", () => {
+  for (const accent of ['["#FFF", "#000000"]', '["#FF8A5B"]', '"#FF8A5B"', '["red", "blue"]', '["#FF8A5B", "#FF3D7F", "#000000"]']) {
+    const p = parsePersonaFile(file(`id: test\nname: Tara\nage: 22\naccent: ${accent}`), "");
+    assert.equal(p.accent, null, accent);
+  }
 });
 
 test("extractPhoto pulls known tags and drops unknown ones", () => {

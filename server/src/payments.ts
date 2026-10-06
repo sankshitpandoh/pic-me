@@ -1,24 +1,27 @@
 import crypto from "node:crypto";
 import type { Request, Response } from "express";
 import { IS_PROD, RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET, getPricing } from "./config.ts";
-import { addCredits, db, getUser, transaction } from "./db.ts";
+import { addCredits, db, transaction } from "./db.ts";
+import { findPurchasablePack, listPacks, offerFor, walletSummary } from "./wallet.ts";
 
 const razorpayEnabled = () => Boolean(RAZORPAY_KEY_ID && RAZORPAY_KEY_SECRET);
 
 export function getWallet(req: Request, res: Response) {
   const pricing = getPricing();
+  const userId = req.user!.id;
   res.json({
-    credits: req.user!.credits,
+    ...walletSummary(userId, new Date(), pricing),
     creditsPerMessage: pricing.creditsPerMessage,
     creditsPerPhoto: pricing.creditsPerPhoto,
-    packs: pricing.packs,
+    packs: listPacks(pricing),
+    offer: offerFor(userId, pricing),
     razorpayKeyId: razorpayEnabled() ? RAZORPAY_KEY_ID : null,
     devTopupEnabled: !IS_PROD,
   });
 }
 
 export async function createOrder(req: Request, res: Response) {
-  const pack = getPricing().packs.find((p) => p.id === req.body?.packId);
+  const pack = findPurchasablePack(req.user!.id, req.body?.packId);
   if (!pack) return res.status(400).json({ error: "invalid_pack" });
   if (!razorpayEnabled()) return res.status(503).json({ error: "payments_not_configured" });
 
@@ -65,7 +68,7 @@ export function verifyPayment(req: Request, res: Response) {
   if (!payment || payment.user_id !== req.user!.id) return res.status(404).json({ error: "order_not_found" });
 
   markPaid(String(orderId), String(paymentId));
-  res.json({ credits: getUser(req.user!.id)!.credits });
+  res.json({ wallet: walletSummary(req.user!.id) });
 }
 
 /**
@@ -97,13 +100,13 @@ function markPaid(orderId: string, paymentId: string) {
   });
 }
 
-/** Local testing only: grants a pack's credits without paying. Disabled when NODE_ENV=production. */
+/** Local testing only: grants a pack's (or the eligible offer's) credits without paying. Disabled when NODE_ENV=production. */
 export function devTopup(req: Request, res: Response) {
   if (IS_PROD) return res.status(404).end();
-  const pack = getPricing().packs.find((p) => p.id === req.body?.packId);
+  const pack = findPurchasablePack(req.user!.id, req.body?.packId);
   if (!pack) return res.status(400).json({ error: "invalid_pack" });
   addCredits(req.user!.id, pack.credits, "dev_topup", pack.id);
-  res.json({ credits: getUser(req.user!.id)!.credits });
+  res.json({ wallet: walletSummary(req.user!.id) });
 }
 
 function safeEqual(a: string, b: string) {

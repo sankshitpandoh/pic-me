@@ -5,6 +5,8 @@ import { DB_PATH } from "./config.ts";
 
 fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
 export const db = new DatabaseSync(DB_PATH);
+// Wait instead of failing when another process (e.g. a parallel test file) holds the lock.
+db.exec("PRAGMA busy_timeout = 5000");
 
 db.exec(`
   PRAGMA journal_mode = WAL;
@@ -88,12 +90,15 @@ function ensureColumn(table: string, column: string, ddl: string): boolean {
   return true;
 }
 
-ensureColumn("users", "streak", "INTEGER NOT NULL DEFAULT 0");
-ensureColumn("users", "last_active_day", "TEXT");
-if (ensureColumn("messages", "photo_unlocked", "INTEGER NOT NULL DEFAULT 0")) {
-  // Photos sent before unlocking existed were already paid for.
-  db.exec("UPDATE messages SET photo_unlocked = 1 WHERE photo_id IS NOT NULL");
-}
+// Columns added after the first release. Locked so two processes starting at once can't both add them.
+transaction(() => {
+  ensureColumn("users", "streak", "INTEGER NOT NULL DEFAULT 0");
+  ensureColumn("users", "last_active_day", "TEXT");
+  if (ensureColumn("messages", "photo_unlocked", "INTEGER NOT NULL DEFAULT 0")) {
+    // Photos sent before unlocking existed were already paid for.
+    db.exec("UPDATE messages SET photo_unlocked = 1 WHERE photo_id IS NOT NULL");
+  }
+});
 
 export type User = { id: number; phone: string; dob: string; credits: number };
 

@@ -27,6 +27,12 @@ export function deleteMessage(id: number) {
   db.prepare("DELETE FROM messages WHERE id = ?").run(id);
 }
 
+export function getMessage(userId: number, personaId: string, id: number): MessageRow | undefined {
+  return db
+    .prepare(`SELECT ${COLUMNS} FROM messages WHERE id = ? AND user_id = ? AND persona_id = ?`)
+    .get(id, userId, personaId) as MessageRow | undefined;
+}
+
 /** Newest `limit` messages of a thread, oldest first. */
 export function recentMessages(userId: number, personaId: string, limit: number): MessageRow[] {
   return (

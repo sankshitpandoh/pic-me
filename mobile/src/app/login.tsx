@@ -12,6 +12,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ApiError, api, errorMessage } from "../lib/api";
 import { useAuth } from "../lib/auth";
+import { t } from "../lib/strings";
 import { colors } from "../lib/theme";
 
 type Step = "phone" | "otp";
@@ -55,7 +56,7 @@ export default function LoginScreen() {
     setError(null);
     try {
       const res = await api.verifyOtp(phone, code, dobString);
-      await signIn(res.token, res.user.credits);
+      await signIn(res.token, res.user);
     } catch (err) {
       if (err instanceof ApiError && err.code === "dob_required") {
         setNeedsDob(true);
@@ -73,7 +74,7 @@ export default function LoginScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.container}>
-        <Text style={styles.logo}>PicMe</Text>
+        <Text style={styles.logo}>{t.brand}</Text>
         <Text style={styles.subtitle}>Your AI friends, always up for a chat 💬</Text>
 
         {step === "phone" ? (
@@ -179,7 +180,7 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
+  safe: { flex: 1, backgroundColor: colors.bg },
   container: { flex: 1, padding: 24, justifyContent: "center" },
   logo: { fontSize: 40, fontWeight: "800", color: colors.primary, textAlign: "center" },
   subtitle: { fontSize: 15, color: colors.textMuted, textAlign: "center", marginBottom: 40, marginTop: 6 },
