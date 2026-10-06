@@ -62,7 +62,38 @@ db.exec(`
     payment_id  TEXT,
     created_at  TEXT NOT NULL DEFAULT (datetime('now'))
   );
+
+  -- Free messages used per user per IST day.
+  CREATE TABLE IF NOT EXISTS daily_usage (
+    user_id     INTEGER NOT NULL REFERENCES users(id),
+    day         TEXT NOT NULL,
+    free_used   INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (user_id, day)
+  );
+
+  -- Per-chat state; drives the unread badge on the persona list.
+  CREATE TABLE IF NOT EXISTS threads (
+    user_id               INTEGER NOT NULL REFERENCES users(id),
+    persona_id            TEXT NOT NULL,
+    last_read_message_id  INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (user_id, persona_id)
+  );
 `);
+
+/** Adds a column to an existing table if it isn't there yet. Returns true when it was added. */
+function ensureColumn(table: string, column: string, ddl: string): boolean {
+  const cols = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];
+  if (cols.some((c) => c.name === column)) return false;
+  db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${ddl}`);
+  return true;
+}
+
+ensureColumn("users", "streak", "INTEGER NOT NULL DEFAULT 0");
+ensureColumn("users", "last_active_day", "TEXT");
+if (ensureColumn("messages", "photo_unlocked", "INTEGER NOT NULL DEFAULT 0")) {
+  // Photos sent before unlocking existed were already paid for.
+  db.exec("UPDATE messages SET photo_unlocked = 1 WHERE photo_id IS NOT NULL");
+}
 
 export type User = { id: number; phone: string; dob: string; credits: number };
 
@@ -90,19 +121,22 @@ export function addCredits(userId: number, delta: number, reason: string, ref?: 
 
 /** Deducts credits only if the balance covers it. Returns false otherwise. */
 export function spendCredits(userId: number, amount: number, reason: string, ref?: string): boolean {
-  return transaction(() => {
-    const res = db
-      .prepare("UPDATE users SET credits = credits - ? WHERE id = ? AND credits >= ?")
-      .run(amount, userId, amount);
-    if (res.changes !== 1) return false;
-    db.prepare("INSERT INTO credit_ledger (user_id, delta, reason, ref) VALUES (?, ?, ?, ?)").run(
-      userId,
-      -amount,
-      reason,
-      ref ?? null,
-    );
-    return true;
-  });
+  return transaction(() => trySpendCredits(userId, amount, reason, ref));
+}
+
+/** Same as spendCredits, for callers already inside a transaction. */
+export function trySpendCredits(userId: number, amount: number, reason: string, ref?: string): boolean {
+  const res = db
+    .prepare("UPDATE users SET credits = credits - ? WHERE id = ? AND credits >= ?")
+    .run(amount, userId, amount);
+  if (res.changes !== 1) return false;
+  db.prepare("INSERT INTO credit_ledger (user_id, delta, reason, ref) VALUES (?, ?, ?, ?)").run(
+    userId,
+    -amount,
+    reason,
+    ref ?? null,
+  );
+  return true;
 }
 
 export function getUser(id: number): User | undefined {

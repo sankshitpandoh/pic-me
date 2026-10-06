@@ -27,7 +27,9 @@
       "expo-router",
       "expo-status-bar",
       "expo-secure-store",
-      "expo-image"
+      "expo-image",
+      "expo-font",
+      "expo-splash-screen"
     ],
     "scheme": "picme"
   }

@@ -2,9 +2,13 @@
   "signupBonusCredits": 20,
   "creditsPerMessage": 1,
   "creditsPerPhoto": 3,
+  "freeMessagesPerDay": 5,
+  "streakBonuses": { "3": 5, "7": 15 },
   "packs": [
-    { "id": "pack_29", "priceInr": 29, "credits": 35, "label": "Starter" },
-    { "id": "pack_49", "priceInr": 49, "credits": 65, "label": "Popular" },
-    { "id": "pack_99", "priceInr": 99, "credits": 140, "label": "Best value" }
-  ]
+    { "id": "pack_10", "priceInr": 10, "credits": 12, "label": "Chhota", "badge": null },
+    { "id": "pack_29", "priceInr": 29, "credits": 36, "label": "Starter", "badge": null },
+    { "id": "pack_49", "priceInr": 49, "credits": 65, "label": "Sabse Popular", "badge": "popular" },
+    { "id": "pack_99", "priceInr": 99, "credits": 140, "label": "Paisa Vasool", "badge": "best" }
+  ],
+  "firstPurchaseOffer": { "id": "offer_first", "priceInr": 19, "credits": 50, "label": "Pehla Recharge Offer" }
 }

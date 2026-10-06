@@ -19,13 +19,35 @@ export const HISTORY_LIMIT = Number(process.env.HISTORY_LIMIT ?? 40);
 export const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID ?? "";
 export const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET ?? "";
 
+export type PackConfig = {
+  id: string;
+  priceInr: number;
+  credits: number;
+  label: string;
+  badge?: "popular" | "best" | "offer" | null;
+};
+
 export type Pricing = {
   signupBonusCredits: number;
   creditsPerMessage: number;
   creditsPerPhoto: number;
-  packs: { id: string; priceInr: number; credits: number; label: string }[];
+  freeMessagesPerDay: number;
+  /** Streak length (in IST days) → bonus credits granted when the streak reaches it. */
+  streakBonuses: Record<string, number>;
+  packs: PackConfig[];
+  /** One-time cheaper pack for users who have never paid. */
+  firstPurchaseOffer: PackConfig | null;
 };
 
 export function getPricing(): Pricing {
-  return JSON.parse(fs.readFileSync(path.join(ROOT, "config", "pricing.json"), "utf8"));
+  const raw = JSON.parse(fs.readFileSync(path.join(ROOT, "config", "pricing.json"), "utf8")) as Partial<Pricing>;
+  return {
+    signupBonusCredits: raw.signupBonusCredits ?? 0,
+    creditsPerMessage: raw.creditsPerMessage ?? 1,
+    creditsPerPhoto: raw.creditsPerPhoto ?? 0,
+    freeMessagesPerDay: raw.freeMessagesPerDay ?? 0,
+    streakBonuses: raw.streakBonuses ?? {},
+    packs: raw.packs ?? [],
+    firstPurchaseOffer: raw.firstPurchaseOffer ?? null,
+  };
 }
