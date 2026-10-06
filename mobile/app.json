@@ -1,24 +1,24 @@
 {
   "expo": {
-    "name": "PicMe",
-    "slug": "picme",
+    "name": "Playmate",
+    "slug": "playmate",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.picme.app"
+      "bundleIdentifier": "com.playmate.app"
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#0F0A12",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.picme.app"
+      "package": "com.playmate.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -29,8 +29,17 @@
       "expo-secure-store",
       "expo-image",
       "expo-font",
-      "expo-splash-screen"
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#0F0A12",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 120,
+          "resizeMode": "contain"
+        }
+      ]
     ],
-    "scheme": "picme"
+    "scheme": "playmate",
+    "backgroundColor": "#0F0A12"
   }
 }

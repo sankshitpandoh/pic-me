@@ -12,6 +12,14 @@ export type Persona = {
   city: string;
   languages: string[];
   tagline: string;
+  /** One line in her own voice; falls back to the tagline. */
+  vibe: string;
+  /** Mood chips shown on her card. */
+  tags: string[];
+  /** Quick-reply suggestions for the user. */
+  starters: string[];
+  /** Two hex colors for her card gradient, or null for the app default. */
+  accent: [string, string] | null;
   avatar?: string;
   greeting: string;
   enabled: boolean;
@@ -21,6 +29,8 @@ export type Persona = {
 };
 
 const BASE_FILE = "_base.md";
+const DEFAULT_STARTERS = ["Kya kar rahi ho?", "Tumhara din kaisa tha?"];
+const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
 
 let cache: { signature: string; personas: Map<string, Persona> } | null = null;
 
@@ -99,6 +109,15 @@ export function parsePersonaFile(raw: string, base: string): Persona {
     photos.push({ id: String(p.id), file: String(p.file), caption: String(p.caption ?? "") });
   }
 
+  const strList = (key: string): string[] =>
+    Array.isArray(meta[key]) ? (meta[key] as unknown[]).map((v) => String(v).trim()).filter(Boolean) : [];
+  const accent = parseAccent(meta.accent);
+  if (meta.accent !== undefined && meta.accent !== null && !accent) {
+    console.warn(`[personas] ${id}: ignoring accent, expected two colors like ["#FF8A5B", "#FF3D7F"]`);
+  }
+  const tagline = str("tagline", false);
+  const starters = strList("starters");
+
   const avatar = str("avatar", false);
   const name = str("name");
   const photoList = photos.length
@@ -117,8 +136,12 @@ export function parsePersonaFile(raw: string, base: string): Persona {
     name,
     age,
     city: str("city", false),
-    languages: Array.isArray(meta.languages) ? meta.languages.map(String) : [],
-    tagline: str("tagline", false),
+    languages: strList("languages"),
+    tagline,
+    vibe: str("vibe", false) || tagline,
+    tags: strList("tags"),
+    starters: starters.length ? starters : [...DEFAULT_STARTERS],
+    accent,
     avatar: avatar && fs.existsSync(path.join(MEDIA_DIR, avatar)) ? avatar : undefined,
     greeting: str("greeting", false) || `Hi! I'm ${name} 😊`,
     enabled: meta.enabled !== false,
@@ -126,6 +149,12 @@ export function parsePersonaFile(raw: string, base: string): Persona {
     photos,
     systemPrompt,
   };
+}
+
+function parseAccent(v: unknown): [string, string] | null {
+  if (!Array.isArray(v) || v.length !== 2) return null;
+  const [a, b] = v.map(String);
+  return HEX_COLOR.test(a) && HEX_COLOR.test(b) ? [a, b] : null;
 }
 
 function stripComments(text: string): string {
