@@ -1,8 +1,7 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useFocusEffect, useLocalSearchParams } from "expo-router";
-import { RechargeSheet } from "../../components/wallet/RechargeSheet"; // DEVTEST
+import { useFocusEffect } from "expo-router";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Easing, RefreshControl, ScrollView, StyleSheet, View } from "react-native";
 import { AppText } from "../../components/AppText";
@@ -29,8 +28,6 @@ export default function WalletScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [celebrate, setCelebrate] = useState<number | null>(null);
   const { buy, buyingId, error: buyError, clearError } = usePurchase(data);
-  const devSheet = useLocalSearchParams<{ sheet?: string }>().sheet; // DEVTEST
-  const [sheetOpen, setSheetOpen] = useState(Boolean(devSheet)); // DEVTEST
 
   const load = useCallback(async () => {
     setLoadError(null);
@@ -155,7 +152,6 @@ export default function WalletScreen() {
       ) : null}
 
       <Celebration credits={celebrate} onDone={() => setCelebrate(null)} />
-      {devSheet ? <RechargeSheet visible={sheetOpen} onClose={() => setSheetOpen(false)} reason={devSheet as "photo"} /> /* DEVTEST */ : null}
     </View>
   );
 }
