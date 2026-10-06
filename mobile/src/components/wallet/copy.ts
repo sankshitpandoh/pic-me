@@ -2,6 +2,7 @@
 export const copy = {
   overline: "Aapke 💎",
   streakChip: "🔥 {n} din",
+  streakStart: "🔥 Aaj streak shuru karo",
   freeChip: "Aaj {left}/{total} free",
   offerTitle: "₹{price} mein {credits} 💎",
   offerSub: "Sirf ek baar · naye users ke liye",

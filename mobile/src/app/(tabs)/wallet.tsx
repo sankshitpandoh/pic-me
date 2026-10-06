@@ -206,7 +206,7 @@ const BalanceHero = memo(function BalanceHero({ credits, streak, freeLeft, freeP
           </AppText>
         </Animated.View>
         <View style={styles.heroChips}>
-          <HeroChip label={fmt(copy.streakChip, { n: streak })} />
+          <HeroChip label={streak > 0 ? fmt(copy.streakChip, { n: streak }) : copy.streakStart} />
           <HeroChip label={fmt(copy.freeChip, { left: freeLeft, total: freePerDay })} />
           <HeroChip label={t.wallet.rate} />
         </View>

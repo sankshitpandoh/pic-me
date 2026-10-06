@@ -11,8 +11,10 @@ const PARTICLES = ["💎", "✨", "🎉", "💎", "⭐", "💖", "💎", "✨", 
 // Precomputed burst vectors (angle spread around the circle, varied distance) — no per-render work.
 const VECTORS = PARTICLES.map((_, i) => {
   const angle = (i / PARTICLES.length) * Math.PI * 2 - Math.PI / 2 + (i % 2 ? 0.18 : -0.12);
-  const dist = 120 + (i % 3) * 34;
-  return { x: Math.cos(angle) * dist, y: Math.sin(angle) * dist, rot: (i % 2 ? 1 : -1) * (40 + i * 9), size: 20 + (i % 3) * 6 };
+  const dist = 110 + (i % 3) * 32;
+  // Squash the lower half so particles mostly fly up and sideways, clear of the copy below the badge.
+  const y = Math.sin(angle) * dist;
+  return { x: Math.cos(angle) * dist * 1.15, y: y > 0 ? y * 0.45 : y, rot: (i % 2 ? 1 : -1) * (40 + i * 9), size: 20 + (i % 3) * 6 };
 });
 
 export type CelebrationProps = {
@@ -61,26 +63,28 @@ export function Celebration({ credits, onDone, duration = 2000, style }: Celebra
     <Animated.View style={[StyleSheet.absoluteFill, styles.root, style, { opacity: fade }]} accessibilityLiveRegion="polite">
       <Pressable style={StyleSheet.absoluteFill} onPress={() => doneRef.current()} accessibilityRole="button" accessibilityLabel={t.common.close} />
       <View style={styles.center} pointerEvents="none">
-        {VECTORS.map((v, i) => {
-          const tx = burst.interpolate({ inputRange: [0, 1], outputRange: [0, v.x] });
-          const ty = burst.interpolate({ inputRange: [0, 0.7, 1], outputRange: [0, v.y, v.y + 40] });
-          const op = burst.interpolate({ inputRange: [0, 0.08, 0.7, 1], outputRange: [0, 1, 1, 0] });
-          const rot = burst.interpolate({ inputRange: [0, 1], outputRange: ["0deg", `${v.rot}deg`] });
-          const sc = burst.interpolate({ inputRange: [0, 0.25, 1], outputRange: [0.4, 1.15, 0.9] });
-          return (
-            <Animated.Text
-              key={i}
-              style={[styles.particle, { fontSize: v.size, opacity: op, transform: [{ translateX: tx }, { translateY: ty }, { rotate: rot }, { scale: sc }] }]}
-            >
-              {PARTICLES[i]}
-            </Animated.Text>
-          );
-        })}
-        <Animated.View style={[styles.badgeWrap, shadows.glowPrimary, { transform: [{ scale: badgeScale }] }]}>
-          <LinearGradient {...gradients.primary} style={styles.badge}>
-            <Ionicons name="checkmark" size={56} color={colors.textOnPrimary} />
-          </LinearGradient>
-        </Animated.View>
+        <View style={styles.burst}>
+          {VECTORS.map((v, i) => {
+            const tx = burst.interpolate({ inputRange: [0, 1], outputRange: [0, v.x] });
+            const ty = burst.interpolate({ inputRange: [0, 0.7, 1], outputRange: [0, v.y, v.y + 40] });
+            const op = burst.interpolate({ inputRange: [0, 0.08, 0.7, 1], outputRange: [0, 1, 1, 0] });
+            const rot = burst.interpolate({ inputRange: [0, 1], outputRange: ["0deg", `${v.rot}deg`] });
+            const sc = burst.interpolate({ inputRange: [0, 0.25, 1], outputRange: [0.4, 1.15, 0.9] });
+            return (
+              <Animated.Text
+                key={i}
+                style={[styles.particle, { fontSize: v.size, opacity: op, transform: [{ translateX: tx }, { translateY: ty }, { rotate: rot }, { scale: sc }] }]}
+              >
+                {PARTICLES[i]}
+              </Animated.Text>
+            );
+          })}
+          <Animated.View style={[styles.badgeWrap, shadows.glowPrimary, { transform: [{ scale: badgeScale }] }]}>
+            <LinearGradient {...gradients.primary} style={styles.badge}>
+              <Ionicons name="checkmark" size={56} color={colors.textOnPrimary} />
+            </LinearGradient>
+          </Animated.View>
+        </View>
         <Animated.View style={[styles.copy, { opacity: pop, transform: [{ translateY: textY }] }]}>
           <AppText variant="title1" align="center">
             {fmt(t.wallet.success, { n: credits })}
@@ -97,6 +101,7 @@ export function Celebration({ credits, onDone, duration = 2000, style }: Celebra
 const styles = StyleSheet.create({
   root: { backgroundColor: colors.overlay, zIndex: 50, elevation: 50 },
   center: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: space.xxxl },
+  burst: { width: 112, height: 112, alignItems: "center", justifyContent: "center" },
   particle: { position: "absolute", textAlign: "center" },
   badgeWrap: { borderRadius: 56 },
   badge: { width: 112, height: 112, borderRadius: 56, alignItems: "center", justifyContent: "center", borderWidth: 4, borderColor: "rgba(255,255,255,0.18)" },
