@@ -1,0 +1,31 @@
+/** Local Roman-Hinglish copy for the Recharge tab + RechargeSheet (extends `t.wallet`). */
+export const copy = {
+  overline: "Aapke 💎",
+  streakChip: "🔥 {n} din",
+  freeChip: "Aaj {left}/{total} free",
+  offerTitle: "₹{price} mein {credits} 💎",
+  offerSub: "Sirf ek baar · naye users ke liye",
+  offerCta: "₹{price} mein lo",
+  normally: "₹{n}",
+  perMessage: "₹{x}/message",
+  save: "SAVE {n}%",
+  packsTitle: "Packs chuno",
+  howTitle: "💎 kaise kaam karte hain",
+  how: [
+    { icon: "chatbubble-ellipses", text: "1 💎 = 1 message" },
+    { icon: "image", text: "Photo 3 💎 — sirf jab tum dekhna chaho" },
+    { icon: "gift", text: "Roz 5 messages free" },
+    { icon: "flame", text: "Streak bonus: din 3 pe +5, din 7 pe +15" },
+  ],
+  bankName: "Bank statement mein naam: Playmate Digital",
+  upi: ["UPI", "GPay", "PhonePe", "Paytm"],
+  paymentSoon: "Payment jaldi aa raha hai 🙏 Thoda intezaar karo",
+  celebrateSub: "Ab baat jaari rakho 💬",
+  sheet: {
+    out_of_credits: { emoji: "😮", title: "Arre, 💎 khatam!", sub: "Baat jaari rakhne ke liye recharge karo" },
+    photo: { emoji: "📸", title: "Photo dekhne ke liye 💎 chahiye", sub: "Ek chhota recharge, aur photo tumhari" },
+    low_balance: { emoji: "⏳", title: "Sirf thode 💎 bache hain", sub: "Beech mein baat na ruke — abhi recharge kar lo" },
+  },
+  sheetBalance: "Balance: {n} 💎",
+  sheetMore: "Saare packs dekho",
+} as const;
