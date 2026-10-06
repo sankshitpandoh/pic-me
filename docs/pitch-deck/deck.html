@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Playmate — Pitch Deck</title>
+<style>
+  @font-face { font-family: "Baloo"; font-weight: 700; src: url("../../mobile/node_modules/@expo-google-fonts/baloo-2/700Bold/Baloo2_700Bold.ttf"); }
+  @font-face { font-family: "Baloo"; font-weight: 800; src: url("../../mobile/node_modules/@expo-google-fonts/baloo-2/800ExtraBold/Baloo2_800ExtraBold.ttf"); }
+  @font-face { font-family: "Mukta"; font-weight: 400; src: url("../../mobile/node_modules/@expo-google-fonts/mukta/400Regular/Mukta_400Regular.ttf"); }
+  @font-face { font-family: "Mukta"; font-weight: 600; src: url("../../mobile/node_modules/@expo-google-fonts/mukta/600SemiBold/Mukta_600SemiBold.ttf"); }
+  @font-face { font-family: "Mukta"; font-weight: 700; src: url("../../mobile/node_modules/@expo-google-fonts/mukta/700Bold/Mukta_700Bold.ttf"); }
+
+  :root {
+    --bg: #0F0A12; --surface: #17101B; --elevated: #1E1524; --elevated2: #271C2F;
+    --text: #F7F1F5; --text2: #C9BCC6; --muted: #8E8193;
+    --rose: #F43F7F; --violet: #B44BE1; --marigold: #FFB547; --mint: #3DDC97;
+    --border: rgba(255,255,255,0.08);
+    --grad: linear-gradient(120deg, #FF5C8F, #F43F7F 45%, #B44BE1);
+    --gold: linear-gradient(120deg, #FFD27A, #FFA834);
+  }
+  @page { size: 1920px 1080px; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); }
+  body { font-family: "Mukta", sans-serif; color: var(--text); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  .slide {
+    width: 1920px; height: 1080px; position: relative; overflow: hidden;
+    padding: 96px 120px; page-break-after: always; break-after: page;
+    background: var(--bg);
+  }
+  .slide::before { /* soft top glow, like the app */
+    content: ""; position: absolute; inset: 0;
+    background:
+      radial-gradient(900px 520px at 8% -10%, rgba(244,63,127,0.22), transparent 70%),
+      radial-gradient(800px 600px at 105% 110%, rgba(180,75,225,0.18), transparent 70%);
+    pointer-events: none;
+  }
+  .slide > * { position: relative; }
+  .slide.center { display: flex; flex-direction: column; justify-content: center; }
+  .slide.center > .footer { position: absolute; }
+
+  .kicker { font: 700 22px/1 "Mukta"; letter-spacing: 4px; text-transform: uppercase; color: var(--rose); margin-bottom: 22px; }
+  h1 { font: 800 92px/1.02 "Baloo"; letter-spacing: -1px; }
+  h2 { font: 700 64px/1.08 "Baloo"; letter-spacing: -0.5px; max-width: 1200px; }
+  h3 { font: 700 34px/1.15 "Baloo"; }
+  p, li { font-size: 28px; line-height: 1.45; color: var(--text2); }
+  .lead { font-size: 34px; line-height: 1.4; color: var(--text2); max-width: 980px; }
+  .grad-text { color: #FF5C8F; }
+  .gold-text { color: #FFC56B; }
+  .muted { color: var(--muted); }
+  .footer { position: absolute; left: 120px; right: 120px; bottom: 44px; display: flex; justify-content: space-between; font-size: 18px; color: var(--muted); }
+  .footer b { font-family: "Baloo"; color: var(--text2); font-weight: 700; }
+
+  /* phone mockup */
+  .phone {
+    width: 360px; height: 779px; border-radius: 52px; padding: 12px;
+    background: linear-gradient(160deg, #3a2c44, #1a1220 60%, #2a1f31);
+    box-shadow: 0 40px 90px rgba(0,0,0,0.55), 0 0 0 1.5px rgba(255,255,255,0.10) inset, 0 0 80px rgba(244,63,127,0.12);
+    flex: none;
+  }
+  .phone img { width: 100%; height: 100%; border-radius: 41px; display: block; object-fit: cover; object-position: top; }
+  .phone.sm { width: 300px; height: 649px; border-radius: 44px; padding: 10px; }
+  .phone.sm img { border-radius: 35px; }
+  .phone.tilt-l { transform: rotate(-5deg); }
+  .phone.tilt-r { transform: rotate(5deg); }
+  .cap { text-align: center; margin-top: 22px; font: 600 22px/1.2 "Mukta"; color: var(--muted); }
+
+  .row { display: flex; gap: 48px; align-items: center; }
+  .cards { display: grid; gap: 28px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 28px; padding: 36px 38px; }
+  .card h3 { margin-bottom: 12px; }
+  .pill { display: inline-flex; align-items: center; gap: 8px; padding: 8px 18px; border-radius: 999px; font: 600 20px/1 "Mukta"; background: rgba(244,63,127,0.14); color: #FF8FB5; border: 1px solid rgba(244,63,127,0.35); }
+  .pill.gold { background: rgba(255,181,71,0.14); color: #FFC56B; border-color: rgba(255,181,71,0.35); }
+  .pill.mint { background: rgba(61,220,151,0.14); color: var(--mint); border-color: rgba(61,220,151,0.35); }
+  ul.ticks { list-style: none; display: grid; gap: 18px; }
+  ul.ticks li { padding-left: 46px; position: relative; }
+  ul.ticks li::before { content: ""; position: absolute; left: 0; top: 10px; width: 26px; height: 26px; border-radius: 50%; background: var(--grad); box-shadow: 0 0 18px rgba(244,63,127,0.45); }
+  ul.ticks li::after { content: ""; position: absolute; left: 8px; top: 16px; width: 9px; height: 5px; border-left: 3px solid #fff; border-bottom: 3px solid #fff; transform: rotate(-45deg); }
+  ul.ticks li b { color: var(--text); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<!-- 1. Cover -->
+<section class="slide" style="display:flex;align-items:center;">
+  <div style="flex:1">
+    <div class="pill" style="margin-bottom:40px">AI companions for Bharat</div>
+    <h1 style="font-size:150px;line-height:1">Playmate<span style="color:var(--rose);font-size:90px;vertical-align:top">♥</span></h1>
+    <p class="lead" style="margin-top:28px;font-size:44px;color:var(--text)">“Koi hai jo sunti hai, hamesha.”</p>
+    <p class="lead" style="margin-top:22px">Warm, Hinglish-speaking AI companions for India's next 500 million internet users. Starts at ₹10.</p>
+  </div>
+  <div class="row" style="gap:0;margin-right:-20px">
+    <div class="phone tilt-l" style="margin-right:-70px;margin-top:80px"><img src="img/04-discover.jpg"></div>
+    <div class="phone tilt-r" style="z-index:2"><img src="img/06-chat.jpg"></div>
+  </div>
+  <div class="footer"><span><b>Playmate</b> · Pitch deck · October 2026</span><span>Confidential</span></div>
+</section>
+
+<!-- 2. Problem -->
+<section class="slide center">
+  <div class="kicker">The problem</div>
+  <h2>Millions of young men in small-town India have no one to just <span class="grad-text">talk to</span>.</h2>
+  <div class="cards" style="grid-template-columns:repeat(3,1fr);margin-top:70px">
+    <div class="card"><div style="font-size:64px">🏙️</div><h3 style="margin-top:18px">Far from home</h3><p>Students, migrant workers and delivery partners move to cities for work. Long shifts, shared rooms, and nobody who asks “khana khaya?”</p></div>
+    <div class="card"><div style="font-size:64px">🌐</div><h3 style="margin-top:18px">Apps aren't built for them</h3><p>Today's AI companion apps are English-first, metro-coded and sold as dollar-priced monthly subscriptions.</p></div>
+    <div class="card"><div style="font-size:64px">🔒</div><h3 style="margin-top:18px">Trust is missing</h3><p>The category is full of sleazy, explicit apps that get banned, leak data or surprise users with hidden charges.</p></div>
+  </div>
+  <div class="footer"><span><b>Playmate</b></span><span>02</span></div>
+</section>
+
+<!-- 3. Solution -->
+<section class="slide">
+  <div class="row" style="align-items:flex-start;gap:80px">
+    <div style="flex:1;padding-top:30px">
+      <div class="kicker">The solution</div>
+      <h2>A friend who <span class="grad-text">remembers you</span>, in your language.</h2>
+      <ul class="ticks" style="margin-top:56px">
+        <li><b>Six AI companions</b> with real personalities from Mumbai, Jaipur, Lucknow, Pune, Ludhiana and Bengaluru.</li>
+        <li><b>Hinglish first.</b> They match the user's language and ask his name, his town, his shift.</li>
+        <li><b>Warm, flirty, never explicit.</b> Built to stay on the Play Store and on the right side of Indian law.</li>
+        <li><b>Sachet pricing:</b> recharge from ₹10 by UPI, 5 free messages every day.</li>
+      </ul>
+    </div>
+    <div class="row" style="gap:28px;margin-top:10px">
+      <div><div class="phone sm"><img src="img/04-discover.jpg"></div><div class="cap">Discover</div></div>
+      <div style="margin-top:90px"><div class="phone sm"><img src="img/06-chat.jpg"></div><div class="cap">Chat</div></div>
+    </div>
+  </div>
+  <div class="footer"><span><b>Playmate</b></span><span>03</span></div>
+</section>
+
+<!-- 4. Who it's for -->
+<section class="slide center">
+  <div class="kicker">Who we're building for</div>
+  <h2>Designed around three target users</h2>
+  <div class="cards" style="grid-template-columns:repeat(3,1fr);margin-top:60px">
+    <div class="card">
+      <div class="pill">22 · Student · Bareilly</div>
+      <h3 style="margin-top:22px">Rohit</h3>
+      <p style="margin-top:10px">Budget Redmi phone, Jio data pack, Hindi first. Spends ₹10–19 at a time, like a game top-up.</p>
+      <p style="margin-top:18px;color:var(--text)">Needs: Hindi chat, tiny prices, a reason to come back daily.</p>
+    </div>
+    <div class="card">
+      <div class="pill gold">28 · Shop owner · Indore</div>
+      <h3 style="margin-top:22px">Vikram</h3>
+      <p style="margin-top:10px">Lives on WhatsApp and PhonePe. Can afford ₹49–99 a month but is very private.</p>
+      <p style="margin-top:18px;color:var(--text)">Needs: discretion, private chats, a neutral bank-statement name.</p>
+    </div>
+    <div class="card">
+      <div class="pill mint">34 · Delivery partner · Pune</div>
+      <h3 style="margin-top:22px">Raju</h3>
+      <p style="margin-top:10px">From a village in UP, works long shifts. Limited English, prefers simple words and voice.</p>
+      <p style="margin-top:18px;color:var(--text)">Needs: someone who asks about his day, ₹10 at night after his shift.</p>
+    </div>
+  </div>
+  <p class="muted" style="margin-top:40px;font-size:22px">Target-user profiles used to design the product. To be validated in a pilot with real users.</p>
+  <div class="footer"><span><b>Playmate</b></span><span>04</span></div>
+</section>
+
+<!-- 5. Market -->
+<section class="slide center">
+  <div class="kicker">Why now</div>
+  <h2>Bharat is online, pays by UPI, and the companion category is growing fast</h2>
+  <div class="cards" style="grid-template-columns:repeat(3,1fr);margin-top:64px">
+    <div class="card" style="padding:44px">
+      <div style="font:800 96px/1 Baloo" class="grad-text">1.0 B</div>
+      <h3 style="margin-top:16px">internet subscribers in India</h3>
+      <p style="margin-top:10px">About <b style="color:var(--text)">423 M</b> of them are rural, mostly on mobile.</p>
+    </div>
+    <div class="card" style="padding:44px">
+      <div style="font:800 96px/1 Baloo" class="gold-text">21.6 B</div>
+      <h3 style="margin-top:16px">UPI transactions in a single month</h3>
+      <p style="margin-top:10px">December 2025. Paying ₹10 is now one tap for every user.</p>
+    </div>
+    <div class="card" style="padding:44px">
+      <div style="font:800 96px/1 Baloo" class="grad-text">$120 M+</div>
+      <h3 style="margin-top:16px">AI companion consumer spend, 2025</h3>
+      <p style="margin-top:10px">220 M downloads worldwide. Almost none built for Indian languages or ₹ pricing.</p>
+    </div>
+  </div>
+  <p class="muted" style="margin-top:40px;font-size:19px;line-height:1.5">Sources: TRAI telecom subscription data, 2025 (trai.gov.in); NPCI data via Business Today, Jan 2026; Appfigures data via TechCrunch, Aug 2025.</p>
+  <div class="footer"><span><b>Playmate</b></span><span>05</span></div>
+</section>
+
+<!-- 6. Product: onboarding -->
+<section class="slide">
+  <div class="row" style="gap:90px">
+    <div style="flex:1">
+      <div class="kicker">Product · Onboarding</div>
+      <h2>Phone number to first chat in under a minute</h2>
+      <ul class="ticks" style="margin-top:52px">
+        <li><b>Phone + OTP</b> sign-up with auto-fill. No passwords, no email.</li>
+        <li><b>18+ gate</b> with date of birth, checked on the phone and on the server.</li>
+        <li><b>Honest by design:</b> users confirm they understand the characters are AI.</li>
+        <li><b>Hinglish copy</b> throughout, written for first-time smartphone users.</li>
+      </ul>
+    </div>
+    <div class="row" style="gap:32px">
+      <div><div class="phone sm"><img src="img/01-login.jpg"></div><div class="cap">Welcome</div></div>
+      <div><div class="phone sm"><img src="img/02-otp.jpg"></div><div class="cap">OTP</div></div>
+    </div>
+  </div>
+  <div class="footer"><span><b>Playmate</b></span><span>06</span></div>
+</section>
+
+<!-- 7. Product: personas -->
+<section class="slide">
+  <div class="row" style="gap:90px">
+    <div class="row" style="gap:32px">
+      <div><div class="phone sm"><img src="img/04-discover.jpg"></div><div class="cap">Discover</div></div>
+      <div><div class="phone sm"><img src="img/05-profile-sheet.jpg"></div><div class="cap">Profile</div></div>
+    </div>
+    <div style="flex:1">
+      <div class="kicker">Product · Personas</div>
+      <h2>Six companions who feel <span class="grad-text">familiar</span></h2>
+      <div class="cards" style="grid-template-columns:1fr 1fr;gap:16px;margin-top:44px">
+        <div class="card" style="padding:22px 26px"><h3 style="font-size:28px">Priya, 24 · Mumbai</h3><p style="font-size:22px">“Chai pe chalein? ☕”</p></div>
+        <div class="card" style="padding:22px 26px"><h3 style="font-size:28px">Meera, 25 · Jaipur</h3><p style="font-size:22px">“Khana kha liya ji? 🍛”</p></div>
+        <div class="card" style="padding:22px 26px"><h3 style="font-size:28px">Noor, 23 · Lucknow</h3><p style="font-size:22px">“Pehle aap... 🌙”</p></div>
+        <div class="card" style="padding:22px 26px"><h3 style="font-size:28px">Sayali, 26 · Pune</h3><p style="font-size:22px">“Kay re, aaj bhi late? 😄”</p></div>
+        <div class="card" style="padding:22px 26px"><h3 style="font-size:28px">Harleen, 32 · Ludhiana</h3><p style="font-size:22px">“Ki haal hai ji? 💛”</p></div>
+        <div class="card" style="padding:22px 26px"><h3 style="font-size:28px">Ananya, 27 · Bengaluru</h3><p style="font-size:22px">“Baatein karein? 🌧️”</p></div>
+      </div>
+      <p style="margin-top:28px;font-size:24px">Each persona is one text file: the team can add a new language or region in an afternoon, with no app release.</p>
+    </div>
+  </div>
+  <div class="footer"><span><b>Playmate</b></span><span>07</span></div>
+</section>
+
+<!-- 8. Product: chat -->
+<section class="slide">
+  <div class="kicker">Product · Chat</div>
+  <h2>A chat that feels alive</h2>
+  <div class="row" style="gap:70px;margin-top:40px;align-items:flex-start">
+    <div class="row" style="gap:30px">
+      <div><div class="phone sm"><img src="img/06-chat.jpg"></div><div class="cap">She remembers you</div></div>
+      <div><div class="phone sm"><img src="img/07-locked-photo.jpg"></div><div class="cap">Tap-to-unlock photos</div></div>
+      <div><div class="phone sm"><img src="img/08-quick-replies.jpg"></div><div class="cap">One-tap openers</div></div>
+    </div>
+    <ul class="ticks" style="flex:1;margin-top:20px">
+      <li><b>Memory:</b> she asks your name and town, and follows up on your shift, exams and family.</li>
+      <li><b>Photos</b> arrive as a caption card. Users pay 3 💎 only if they choose to open one.</li>
+      <li><b>Quick replies</b> remove the blank-keyboard problem for new users.</li>
+      <li><b>Typing dots, ticks, timestamps:</b> it feels like WhatsApp.</li>
+    </ul>
+  </div>
+  <div class="footer"><span><b>Playmate</b></span><span>08</span></div>
+</section>
+
+<!-- 9. Business model -->
+<section class="slide">
+  <div class="row" style="gap:80px;align-items:flex-start">
+    <div style="flex:1">
+      <div class="kicker">Business model</div>
+      <h2>Sachet recharges, <span class="gold-text">not subscriptions</span></h2>
+      <div class="card" style="margin-top:44px;padding:10px 36px">
+        <table style="width:100%;border-collapse:collapse;font-size:27px">
+          <tr style="color:var(--muted);font-size:20px;letter-spacing:2px;text-transform:uppercase"><td style="padding:18px 0">Pack</td><td>Price</td><td>💎 Credits</td><td>Per message</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:16px 0;color:var(--marigold)">🎁 First recharge</td><td>₹19</td><td>50</td><td>₹0.38</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:16px 0">Chhota</td><td>₹10</td><td>12</td><td>₹0.83</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:16px 0">Starter</td><td>₹29</td><td>36</td><td>₹0.81</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:16px 0">⭐ Sabse Popular</td><td>₹49</td><td>65</td><td>₹0.75</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:16px 0">💰 Paisa Vasool</td><td>₹99</td><td>140</td><td>₹0.71</td></tr>
+        </table>
+      </div>
+      <p style="margin-top:28px;font-size:24px">1 💎 = 1 message · 3 💎 = 1 photo, only when the user taps to open it · 20 💎 on sign-up · 5 free messages every day · paid by UPI through Razorpay.</p>
+    </div>
+    <div class="row" style="gap:28px">
+      <div><div class="phone sm"><img src="img/09-wallet-offer.jpg"></div><div class="cap">Recharge tab</div></div>
+      <div><div class="phone sm"><img src="img/10-recharge-sheet.jpg"></div><div class="cap">In-chat recharge</div></div>
+    </div>
+  </div>
+  <div class="footer"><span><b>Playmate</b></span><span>09</span></div>
+</section>
+
+<!-- 10. Retention -->
+<section class="slide">
+  <div class="row" style="gap:80px;align-items:flex-start">
+    <div class="row" style="gap:28px">
+      <div><div class="phone sm"><img src="img/03-chats.jpg"></div><div class="cap">Inbox + streak</div></div>
+      <div><div class="phone sm"><img src="img/11-celebration-900.jpg"></div><div class="cap">Recharge moment</div></div>
+    </div>
+    <div style="flex:1">
+      <div class="kicker">Retention loops</div>
+      <h2>Built for a <span class="grad-text">daily habit</span></h2>
+      <div class="cards" style="margin-top:44px;gap:18px">
+        <div class="card" style="padding:26px 32px"><h3 style="font-size:30px">🎁 5 free messages a day</h3><p style="font-size:24px">Even non-payers have a reason to open the app every day.</p></div>
+        <div class="card" style="padding:26px 32px"><h3 style="font-size:30px">🔥 Streak bonuses</h3><p style="font-size:24px">+5 💎 on day 3 and +15 💎 on day 7 reward coming back.</p></div>
+        <div class="card" style="padding:26px 32px"><h3 style="font-size:30px">💬 Unread replies in the inbox</h3><p style="font-size:24px">Like WhatsApp: someone is waiting for you.</p></div>
+        <div class="card" style="padding:26px 32px"><h3 style="font-size:30px">🎉 Low-balance nudges, not walls</h3><p style="font-size:24px">Recharge inside the chat; the held message sends itself after payment.</p></div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><span><b>Playmate</b></span><span>10</span></div>
+</section>
+
+<!-- 11. Trust & safety -->
+<section class="slide center">
+  <div class="kicker">Trust &amp; safety</div>
+  <h2>Safe by design, so we can grow on the Play Store and UPI</h2>
+  <div class="cards" style="grid-template-columns:repeat(3,1fr);margin-top:60px">
+    <div class="card"><h3>🚫 Never explicit</h3><p style="margin-top:10px">Flirty and warm, but every persona deflects sexual content in character. Required by Play Store, payment partners and IT Act s.67A.</p></div>
+    <div class="card"><h3>🔞 Adults only</h3><p style="margin-top:10px">Date-of-birth gate on sign-up. All personas are 18+, and they drop flirting if a user says he is underage.</p></div>
+    <div class="card"><h3>🤖 Honest AI</h3><p style="margin-top:10px">Clearly labelled “AI character”. If asked sincerely, she says she is an AI.</p></div>
+    <div class="card"><h3>💸 No manipulation</h3><p style="margin-top:10px">Personas never ask for money, UPI, gifts, meetings or personal details, and never pressure users to recharge.</p></div>
+    <div class="card"><h3>💚 Care built in</h3><p style="margin-top:10px">Self-harm mentions trigger a caring response and the Tele-MANAS helpline (14416).</p></div>
+    <div class="card"><h3>🔐 Privacy</h3><p style="margin-top:10px">OTP login, no public profiles, delete-all-chats and full account deletion in the app.</p></div>
+  </div>
+  <div class="footer"><span><b>Playmate</b></span><span>11</span></div>
+</section>
+
+<!-- 12. Tech + economics -->
+<section class="slide center">
+  <div class="row" style="gap:70px;align-items:flex-start">
+    <div style="flex:1">
+      <div class="kicker">How it's built</div>
+      <h2 style="font-size:56px">Light app, smart backend</h2>
+      <ul class="ticks" style="margin-top:44px">
+        <li><b>React Native (Expo)</b>, dark UI tuned for budget Android phones and slow data.</li>
+        <li><b>Claude</b> (Anthropic) powers the personas, with prompt caching to cut cost per message.</li>
+        <li><b>Personas as text files:</b> new characters ship without an app update.</li>
+        <li><b>Credit ledger</b> with automatic refunds when a reply fails.</li>
+        <li><b>Razorpay UPI</b> with signature-verified payments and webhooks.</li>
+      </ul>
+    </div>
+    <div style="flex:1">
+      <div class="kicker">Unit economics</div>
+      <h2 style="font-size:56px">₹0.71–0.83 revenue per paid message</h2>
+      <div class="card" style="margin-top:44px">
+        <p>Main cost lever is the AI model per message. Levers already in the product:</p>
+        <ul class="ticks" style="margin-top:20px;gap:12px">
+          <li style="font-size:24px">Model is one config switch (premium vs. low-cost tiers).</li>
+          <li style="font-size:24px">Prompt caching and a capped chat history.</li>
+          <li style="font-size:24px">Pre-made photos: no image-generation cost.</li>
+        </ul>
+        <p style="margin-top:20px;font-size:22px" class="muted">Cost per message and conversion rates to be measured in the pilot before final pricing.</p>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><span><b>Playmate</b></span><span>12</span></div>
+</section>
+
+<!-- 13. Roadmap -->
+<section class="slide center">
+  <div class="kicker">Roadmap</div>
+  <h2>What's built, and what's next</h2>
+  <div class="cards" style="grid-template-columns:repeat(3,1fr);margin-top:60px">
+    <div class="card" style="border-color:rgba(61,220,151,0.35)">
+      <div class="pill mint">Built</div>
+      <ul class="ticks" style="margin-top:26px;gap:14px">
+        <li style="font-size:24px">OTP sign-up with 18+ gate</li>
+        <li style="font-size:24px">6 personas, Hinglish chat</li>
+        <li style="font-size:24px">Tap-to-unlock photos</li>
+        <li style="font-size:24px">Credits, free daily messages, streaks</li>
+        <li style="font-size:24px">Recharge flow and server-side payments</li>
+      </ul>
+    </div>
+    <div class="card" style="border-color:rgba(244,63,127,0.35)">
+      <div class="pill">Next 90 days</div>
+      <ul class="ticks" style="margin-top:26px;gap:14px">
+        <li style="font-size:24px">Razorpay UPI checkout in the app</li>
+        <li style="font-size:24px">Real persona artwork</li>
+        <li style="font-size:24px">Push “check-ins” in her voice</li>
+        <li style="font-size:24px">App lock and discreet notifications</li>
+        <li style="font-size:24px">Analytics and a 1,000-user pilot</li>
+      </ul>
+    </div>
+    <div class="card" style="border-color:rgba(255,181,71,0.35)">
+      <div class="pill gold">Later</div>
+      <ul class="ticks" style="margin-top:26px;gap:14px">
+        <li style="font-size:24px">Voice notes, both ways</li>
+        <li style="font-size:24px">Bhojpuri, Tamil, Bengali, Marathi personas</li>
+        <li style="font-size:24px">Long-term memory</li>
+        <li style="font-size:24px">Festival moments and referrals</li>
+        <li style="font-size:24px">Weekly unlimited pass</li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer"><span><b>Playmate</b></span><span>13</span></div>
+</section>
+
+<!-- 14. Close -->
+<section class="slide" style="display:flex;align-items:center">
+  <div style="flex:1">
+    <div class="kicker">What the funding unlocks</div>
+    <h2 style="font-size:66px;max-width:1100px">Help us give Bharat someone<br>to <span class="grad-text">talk to</span>.</h2>
+    <div class="cards" style="grid-template-columns:1fr 1fr;gap:20px;margin-top:50px;max-width:1000px">
+      <div class="card" style="padding:26px 30px"><h3 style="font-size:28px">🚀 Pilot &amp; launch</h3><p style="font-size:22px">Play Store launch and a 1,000-user pilot in tier 2–3 cities.</p></div>
+      <div class="card" style="padding:26px 30px"><h3 style="font-size:28px">🎨 Persona art &amp; voice</h3><p style="font-size:22px">Original artwork and regional voices for every companion.</p></div>
+      <div class="card" style="padding:26px 30px"><h3 style="font-size:28px">🧠 AI costs</h3><p style="font-size:22px">Model usage while we tune cost per message.</p></div>
+      <div class="card" style="padding:26px 30px"><h3 style="font-size:28px">🛡️ Trust &amp; compliance</h3><p style="font-size:22px">Moderation, grievance officer, legal and trademark review.</p></div>
+    </div>
+  </div>
+  <div style="text-align:center">
+    <div class="phone"><img src="img/03-chats.jpg"></div>
+    <p style="margin-top:34px;font:800 56px/1 Baloo;color:var(--text)">Playmate<span style="color:var(--rose)">♥</span></p>
+    <p class="muted" style="font-size:24px;margin-top:10px">Koi hai jo sunti hai, hamesha.</p>
+  </div>
+  <div class="footer"><span><b>Playmate</b></span><span>14</span></div>
+</section>
+
+</body>
+</html>
