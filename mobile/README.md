@@ -1,4 +1,4 @@
-# PicMe mobile app
+# Playmate mobile app
 
 Expo (SDK 57) + Expo Router app for the companion chat. The API lives in `../server`.
 
@@ -13,16 +13,23 @@ npx expo start           # press a for Android, w for web
 
 On a physical phone (Expo Go), `localhost` points at the phone itself. Set `EXPO_PUBLIC_API_URL` to your computer's LAN IP, e.g. `http://192.168.1.20:4000`.
 
-## Screens (`src/app/`)
+## Structure (`src/`)
 
-| File | Screen |
+Dark-first "after-dark lounge" UI. Fonts: Baloo 2 (display) + Mukta (body). Copy is Roman Hinglish.
+
+| Path | What |
 |---|---|
-| `login.tsx` | Phone → OTP → date of birth + 18+ and AI-disclosure checkbox (new users only) |
-| `index.tsx` | Persona list, credits pill (taps through to wallet), logout |
-| `chat/[personaId].tsx` | Chat with typing indicator, photo messages (tap to enlarge), out-of-credits banner |
-| `wallet.tsx` | Balance and recharge packs |
+| `app/_layout.tsx` | Root stack: fonts + splash, dark nav theme, auth guards (`(tabs)` + `chat/[personaId]` when signed in, `login` otherwise) |
+| `app/(tabs)/_layout.tsx` | Bottom tabs: Chats (`index`), Discover, Recharge (`wallet`), Profile |
+| `app/login.tsx` | Phone → OTP → date of birth + 18+ / AI-disclosure consent |
+| `app/chat/[personaId].tsx` | Chat |
+| `lib/theme.ts` | Design tokens: `colors`, `gradients`, `personaGradient()`, `fonts`, `type`, `space`, `radii`, `shadows`, `motion` |
+| `lib/strings.ts` | All UI copy (`t`) + `fmt()` for `{placeholders}` |
+| `lib/api.ts` | Typed API client + `errorMessage()` |
+| `lib/auth.tsx` | Session + `wallet` state (`useAuth()`) — SecureStore on device, localStorage on web |
+| `components/` | Shared UI: `AppText`, `Avatar`, `GradientButton`, `CreditsPill`, `Chip`, `TypingDots`, `BottomSheet`, `PressableScale`, `GlowBackground`, `ScreenState` |
 
-API client: `src/lib/api.ts`. Session storage: `src/lib/auth.tsx` (SecureStore on device, localStorage on web). Colors: `src/lib/theme.ts`.
+Animations use React Native's `Animated` with `useNativeDriver: true` (no reanimated / blur, to stay light on budget Android phones). Never set `fontWeight` with the custom fonts — use `<AppText variant>` or `fonts.*`.
 
 ## Checks
 
@@ -33,4 +40,4 @@ npx expo-doctor
 
 ## Payments
 
-`wallet.tsx` already creates Razorpay orders on the server. Opening Razorpay Checkout needs `react-native-razorpay`, a native module, so it won't run in Expo Go. Build a development client (`npx expo run:android` or `eas build --profile development`) and fill in the TODO in `wallet.tsx`.
+The Recharge tab (`app/(tabs)/wallet.tsx`) creates Razorpay orders on the server. Opening Razorpay Checkout needs `react-native-razorpay`, a native module, so it won't run in Expo Go. Build a development client (`npx expo run:android` or `eas build --profile development`) and wire Checkout into the Recharge tab.

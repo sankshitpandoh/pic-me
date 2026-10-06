@@ -36,7 +36,7 @@ export default function TabsLayout() {
         },
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textMuted,
-        tabBarLabelStyle: { fontFamily: fonts.bodySemi, fontSize: 11 },
+        tabBarLabelStyle: { fontFamily: fonts.bodySemi, fontSize: 11, lineHeight: 14, includeFontPadding: false },
         tabBarBadgeStyle: { backgroundColor: colors.danger, color: colors.textOnPrimary, fontFamily: fonts.bodyBold, fontSize: 10 },
         tabBarHideOnKeyboard: true,
       }}
